@@ -21,24 +21,24 @@ using namespace DirectX;
 //--------------------------------------------------------------------------------------
 struct SimpleVertex
 {
-    XMFLOAT3 Pos;
-    XMFLOAT2 Tex;
+	XMFLOAT3 Pos;
+	XMFLOAT2 Tex;
 };
 
 struct CBNeverChanges
 {
-    XMMATRIX mView;
+	XMMATRIX mView;
 };
 
 struct CBChangeOnResize
 {
-    XMMATRIX mProjection;
+	XMMATRIX mProjection;
 };
 
 struct CBChangesEveryFrame
 {
-    XMMATRIX mWorld;
-    XMFLOAT4 vMeshColor;
+	XMMATRIX mWorld;
+	XMFLOAT4 vMeshColor;
 };
 
 
@@ -97,38 +97,38 @@ auto initMatrices(long width, long height) -> void;
 //--------------------------------------------------------------------------------------
 auto WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow ) -> int
 {
-    UNREFERENCED_PARAMETER( hPrevInstance );
-    UNREFERENCED_PARAMETER( lpCmdLine );
+	UNREFERENCED_PARAMETER( hPrevInstance );
+	UNREFERENCED_PARAMETER( lpCmdLine );
 
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 	{
 		return 0;
 	}
 
-    if( FAILED( initialize() ) )
-    {
-        CleanupDevice();
-        return 0;
-    }
+	if( FAILED( initialize() ) )
+	{
+		CleanupDevice();
+		return 0;
+	}
 
-    // Main message loop
-    MSG msg = {0};
-    while( WM_QUIT != msg.message )
-    {
-        if( PeekMessage( &msg, nullptr, 0, 0, PM_REMOVE ) )
-        {
-            TranslateMessage( &msg );
-            DispatchMessage( &msg );
-        }
-        else
-        {
-            Render();
-        }
-    }
+	// Main message loop
+	MSG msg = {0};
+	while( WM_QUIT != msg.message )
+	{
+		if( PeekMessage( &msg, nullptr, 0, 0, PM_REMOVE ) )
+		{
+			TranslateMessage( &msg );
+			DispatchMessage( &msg );
+		}
+		else
+		{
+			Render();
+		}
+	}
 
-    CleanupDevice();
+	CleanupDevice();
 
-    return static_cast<int>(msg.wParam);
+	return static_cast<int>(msg.wParam);
 }
 
 //--------------------------------------------------------------------------------------
@@ -136,41 +136,41 @@ auto WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 //--------------------------------------------------------------------------------------
 auto InitWindow(HINSTANCE hInstance, int nCmdShow) -> HRESULT
 {
-    // Register class
-    WNDCLASSEX wcex;
-    wcex.cbSize = sizeof( WNDCLASSEX );
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc = WndProc;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
-    wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon( hInstance, reinterpret_cast<LPCTSTR>(IDI_TUTORIAL1) );
-    wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
-    wcex.hbrBackground = reinterpret_cast<HBRUSH>( COLOR_WINDOW + 1 );
-    wcex.lpszMenuName = nullptr;
-    wcex.lpszClassName = L"RenderingWindowClass";
+	// Register class
+	WNDCLASSEX wcex;
+	wcex.cbSize = sizeof( WNDCLASSEX );
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = hInstance;
+	wcex.hIcon = LoadIcon( hInstance, reinterpret_cast<LPCTSTR>(IDI_TUTORIAL1) );
+	wcex.hCursor = LoadCursor( nullptr, IDC_ARROW );
+	wcex.hbrBackground = reinterpret_cast<HBRUSH>( COLOR_WINDOW + 1 );
+	wcex.lpszMenuName = nullptr;
+	wcex.lpszClassName = L"RenderingWindowClass";
 	wcex.hIconSm = LoadIcon(wcex.hInstance, reinterpret_cast<LPCTSTR>(IDI_TUTORIAL1));
 	if (!RegisterClassEx(&wcex))
 	{
 		return E_FAIL;
 	}
 
-    // Create window
-    g_hInst = hInstance;
-    RECT rc = { 0, 0, 800, 600 };
-    AdjustWindowRect( &rc, WS_OVERLAPPEDWINDOW, FALSE );
-    g_hWnd = CreateWindow( L"RenderingWindowClass", L"Direct3D Rendering Test",
-                           WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-                           CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
-                           nullptr );
+	// Create window
+	g_hInst = hInstance;
+	RECT rc = { 0, 0, 800, 600 };
+	AdjustWindowRect( &rc, WS_OVERLAPPEDWINDOW, FALSE );
+	g_hWnd = CreateWindow( L"RenderingWindowClass", L"Direct3D Rendering Test",
+		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+		CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
+		nullptr );
 	if (!g_hWnd)
 	{
 		return E_FAIL;
 	}
 
-    ShowWindow( g_hWnd, nCmdShow );
+	ShowWindow( g_hWnd, nCmdShow );
 
-    return S_OK;
+	return S_OK;
 }
 
 //--------------------------------------------------------------------------------------
@@ -180,39 +180,39 @@ auto InitWindow(HINSTANCE hInstance, int nCmdShow) -> HRESULT
 //--------------------------------------------------------------------------------------
 auto CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut ) -> HRESULT
 {
-    auto hr = S_OK;
+	auto hr = S_OK;
 
-    auto dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+	auto dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #ifdef _DEBUG
-    // Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
-    // Setting this flag improves the shader debugging experience, but still allows 
-    // the shaders to be optimized and to run exactly the way they will run in 
-    // the release configuration of this program.
-    dwShaderFlags |= D3DCOMPILE_DEBUG;
+	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
+	// Setting this flag improves the shader debugging experience, but still allows 
+	// the shaders to be optimized and to run exactly the way they will run in 
+	// the release configuration of this program.
+	dwShaderFlags |= D3DCOMPILE_DEBUG;
 
-    // Disable optimizations to further improve shader debugging
-    dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+	// Disable optimizations to further improve shader debugging
+	dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
-    ID3DBlob* pErrorBlob = nullptr;
-    hr = D3DCompileFromFile( szFileName, nullptr, nullptr, szEntryPoint, szShaderModel, 
-        dwShaderFlags, 0, ppBlobOut, &pErrorBlob );
-    if( FAILED(hr) )
-    {
-        if( pErrorBlob )
-        {
-            OutputDebugStringA( reinterpret_cast<const char*>( pErrorBlob->GetBufferPointer() ) );
-            pErrorBlob->Release();
-        }
-        return hr;
-    }
+	ID3DBlob* pErrorBlob = nullptr;
+	hr = D3DCompileFromFile( szFileName, nullptr, nullptr, szEntryPoint, szShaderModel, 
+		dwShaderFlags, 0, ppBlobOut, &pErrorBlob );
+	if( FAILED(hr) )
+	{
+		if( pErrorBlob )
+		{
+			OutputDebugStringA( reinterpret_cast<const char*>( pErrorBlob->GetBufferPointer() ) );
+			pErrorBlob->Release();
+		}
+		return hr;
+	}
 
 	if (pErrorBlob)
 	{
 		pErrorBlob->Release();
 	}
 
-    return S_OK;
+	return S_OK;
 }
 
 auto initialize() -> HRESULT
@@ -236,11 +236,11 @@ auto initialize() -> HRESULT
 		return hr;
 	}
 
-    g_pImmediateContext->OMSetRenderTargets( 1, &g_pRenderTargetView, g_pDepthStencilView );
+	g_pImmediateContext->OMSetRenderTargets( 1, &g_pRenderTargetView, g_pDepthStencilView );
 
-    // Setup the viewport
+	// Setup the viewport
 	setupViewport(width, height);
-    
+	
 	// Initialize the shaders.
 	ID3DBlob* pVSBlob = nullptr;
 	ID3DBlob* pPSBlob = nullptr;
@@ -252,69 +252,69 @@ auto initialize() -> HRESULT
 
 	// Define and create the input layout.
 	hr = createInputLayout(pVSBlob);
-    pVSBlob->Release();
+	pVSBlob->Release();
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-    // Set the input layout
-    g_pImmediateContext->IASetInputLayout( g_pVertexLayout );
+	// Set the input layout
+	g_pImmediateContext->IASetInputLayout( g_pVertexLayout );
 
-    SimpleVertex vertices[] =
-    {
-        { XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
+	SimpleVertex vertices[] =
+	{
+		{ XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
+		{ XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
+		{ XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+		{ XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
 
-        { XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+		{ XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
+		{ XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
+		{ XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
+		{ XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
 
-        { XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
+		{ XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+		{ XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
+		{ XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
+		{ XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
 
-        { XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
+		{ XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
+		{ XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+		{ XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
+		{ XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
 
-        { XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
+		{ XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+		{ XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
+		{ XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
+		{ XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
 
-        { XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-    };
+		{ XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
+		{ XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+		{ XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
+		{ XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
+	};
 
-    // Create index buffer
-    WORD indices[] =
-    {
-        3,1,0,
-        2,1,3,
+	// Create index buffer
+	WORD indices[] =
+	{
+		3,1,0,
+		2,1,3,
 
-        6,4,5,
-        7,4,6,
+		6,4,5,
+		7,4,6,
 
-        11,9,8,
-        10,9,11,
+		11,9,8,
+		10,9,11,
 
-        14,12,13,
-        15,12,14,
+		14,12,13,
+		15,12,14,
 
-        19,17,16,
-        18,17,19,
+		19,17,16,
+		18,17,19,
 
-        22,20,21,
-        23,20,22
-    };
+		22,20,21,
+		23,20,22
+	};
 
 	hr = initBuffers(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices));
 	if (FAILED(hr))
@@ -322,8 +322,8 @@ auto initialize() -> HRESULT
 		return hr;
 	}
 
-    // Set primitive topology
-    g_pImmediateContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+	// Set primitive topology
+	g_pImmediateContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
 	hr = initTexture();
 	if (FAILED(hr))
@@ -333,7 +333,7 @@ auto initialize() -> HRESULT
 
 	initMatrices(width, height);
 
-    return S_OK;
+	return S_OK;
 }
 
 //--------------------------------------------------------------------------------------
@@ -701,27 +701,27 @@ auto initMatrices(long width, long height) -> void
 //--------------------------------------------------------------------------------------
 auto CleanupDevice() -> void
 {
-    if( g_pImmediateContext ) g_pImmediateContext->ClearState();
+	if( g_pImmediateContext ) g_pImmediateContext->ClearState();
 
-    if( g_pSamplerLinear ) g_pSamplerLinear->Release();
-    if( g_pTextureRV ) g_pTextureRV->Release();
-    if( g_pCBNeverChanges ) g_pCBNeverChanges->Release();
-    if( g_pCBChangeOnResize ) g_pCBChangeOnResize->Release();
-    if( g_pCBChangesEveryFrame ) g_pCBChangesEveryFrame->Release();
-    if( g_pVertexBuffer ) g_pVertexBuffer->Release();
-    if( g_pIndexBuffer ) g_pIndexBuffer->Release();
-    if( g_pVertexLayout ) g_pVertexLayout->Release();
-    if( g_pVertexShader ) g_pVertexShader->Release();
-    if( g_pPixelShader ) g_pPixelShader->Release();
-    if( g_pDepthStencil ) g_pDepthStencil->Release();
-    if( g_pDepthStencilView ) g_pDepthStencilView->Release();
-    if( g_pRenderTargetView ) g_pRenderTargetView->Release();
-    if( g_pSwapChain1 ) g_pSwapChain1->Release();
-    if( g_pSwapChain ) g_pSwapChain->Release();
-    if( g_pImmediateContext1 ) g_pImmediateContext1->Release();
-    if( g_pImmediateContext ) g_pImmediateContext->Release();
-    if( g_pd3dDevice1 ) g_pd3dDevice1->Release();
-    if( g_pd3dDevice ) g_pd3dDevice->Release();
+	if( g_pSamplerLinear ) g_pSamplerLinear->Release();
+	if( g_pTextureRV ) g_pTextureRV->Release();
+	if( g_pCBNeverChanges ) g_pCBNeverChanges->Release();
+	if( g_pCBChangeOnResize ) g_pCBChangeOnResize->Release();
+	if( g_pCBChangesEveryFrame ) g_pCBChangesEveryFrame->Release();
+	if( g_pVertexBuffer ) g_pVertexBuffer->Release();
+	if( g_pIndexBuffer ) g_pIndexBuffer->Release();
+	if( g_pVertexLayout ) g_pVertexLayout->Release();
+	if( g_pVertexShader ) g_pVertexShader->Release();
+	if( g_pPixelShader ) g_pPixelShader->Release();
+	if( g_pDepthStencil ) g_pDepthStencil->Release();
+	if( g_pDepthStencilView ) g_pDepthStencilView->Release();
+	if( g_pRenderTargetView ) g_pRenderTargetView->Release();
+	if( g_pSwapChain1 ) g_pSwapChain1->Release();
+	if( g_pSwapChain ) g_pSwapChain->Release();
+	if( g_pImmediateContext1 ) g_pImmediateContext1->Release();
+	if( g_pImmediateContext ) g_pImmediateContext->Release();
+	if( g_pd3dDevice1 ) g_pd3dDevice1->Release();
+	if( g_pd3dDevice ) g_pd3dDevice->Release();
 }
 
 //--------------------------------------------------------------------------------------
@@ -729,28 +729,28 @@ auto CleanupDevice() -> void
 //--------------------------------------------------------------------------------------
 auto CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) -> LRESULT
 {
-    PAINTSTRUCT ps;
-    HDC hdc;
+	PAINTSTRUCT ps;
+	HDC hdc;
 
-    switch( message )
-    {
-    case WM_PAINT:
-        hdc = BeginPaint( hWnd, &ps );
-        EndPaint( hWnd, &ps );
-        break;
+	switch( message )
+	{
+		case WM_PAINT:
+		hdc = BeginPaint( hWnd, &ps );
+		EndPaint( hWnd, &ps );
+		break;
 
-    case WM_DESTROY:
-        PostQuitMessage( 0 );
-        break;
+		case WM_DESTROY:
+		PostQuitMessage( 0 );
+		break;
 
-        // Note that this tutorial does not handle resizing (WM_SIZE) requests,
-        // so we created the window without the resize border.
+		// Note that this tutorial does not handle resizing (WM_SIZE) requests,
+		// so we created the window without the resize border.
 
-    default:
-        return DefWindowProc( hWnd, message, wParam, lParam );
-    }
+		default:
+		return DefWindowProc( hWnd, message, wParam, lParam );
+	}
 
-    return 0;
+	return 0;
 }
 
 //--------------------------------------------------------------------------------------
@@ -758,62 +758,62 @@ auto CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) -
 //--------------------------------------------------------------------------------------
 auto Render() -> void
 {
-    // Update our time
-    static auto t = 0.0f;
-    if( g_driverType == D3D_DRIVER_TYPE_REFERENCE )
-    {
-        t += static_cast<float>(XM_PI * 0.0125f);
-    }
-    else
-    {
-        static ULONGLONG timeStart = 0;
-        auto timeCur = GetTickCount64();
-        if( timeStart == 0 )
-            timeStart = timeCur;
-        t = ( timeCur - timeStart ) / 1000.0f;
-    }
+	// Update our time
+	static auto t = 0.0f;
+	if( g_driverType == D3D_DRIVER_TYPE_REFERENCE )
+	{
+		t += static_cast<float>(XM_PI * 0.0125f);
+	}
+	else
+	{
+		static ULONGLONG timeStart = 0;
+		auto timeCur = GetTickCount64();
+		if( timeStart == 0 )
+			timeStart = timeCur;
+		t = ( timeCur - timeStart ) / 1000.0f;
+	}
 
-    // Rotate cube around the origin
-    g_World = XMMatrixRotationY( t );
+	// Rotate cube around the origin
+	g_World = XMMatrixRotationY( t );
 
-    // Modify the color
-    g_vMeshColor.x = ( sinf( t * 1.0f ) + 1.0f ) * 0.5f;
-    g_vMeshColor.y = ( cosf( t * 3.0f ) + 1.0f ) * 0.5f;
-    g_vMeshColor.z = ( sinf( t * 5.0f ) + 1.0f ) * 0.5f;
+	// Modify the color
+	g_vMeshColor.x = ( sinf( t * 1.0f ) + 1.0f ) * 0.5f;
+	g_vMeshColor.y = ( cosf( t * 3.0f ) + 1.0f ) * 0.5f;
+	g_vMeshColor.z = ( sinf( t * 5.0f ) + 1.0f ) * 0.5f;
 
-    //
-    // Clear the back buffer
-    //
-    g_pImmediateContext->ClearRenderTargetView( g_pRenderTargetView, Colors::Black );
+	//
+	// Clear the back buffer
+	//
+	g_pImmediateContext->ClearRenderTargetView( g_pRenderTargetView, Colors::Black );
 
-    //
-    // Clear the depth buffer to 1.0 (max depth)
-    //
-    g_pImmediateContext->ClearDepthStencilView( g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
+	//
+	// Clear the depth buffer to 1.0 (max depth)
+	//
+	g_pImmediateContext->ClearDepthStencilView( g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
 
-    //
-    // Update variables that change once per frame
-    //
-    CBChangesEveryFrame cb;
-    cb.mWorld = XMMatrixTranspose( g_World );
-    cb.vMeshColor = g_vMeshColor;
-    g_pImmediateContext->UpdateSubresource( g_pCBChangesEveryFrame, 0, nullptr, &cb, 0, 0 );
+	//
+	// Update variables that change once per frame
+	//
+	CBChangesEveryFrame cb;
+	cb.mWorld = XMMatrixTranspose( g_World );
+	cb.vMeshColor = g_vMeshColor;
+	g_pImmediateContext->UpdateSubresource( g_pCBChangesEveryFrame, 0, nullptr, &cb, 0, 0 );
 
-    //
-    // Render the cube
-    //
-    g_pImmediateContext->VSSetShader( g_pVertexShader, nullptr, 0 );
-    g_pImmediateContext->VSSetConstantBuffers( 0, 1, &g_pCBNeverChanges );
-    g_pImmediateContext->VSSetConstantBuffers( 1, 1, &g_pCBChangeOnResize );
-    g_pImmediateContext->VSSetConstantBuffers( 2, 1, &g_pCBChangesEveryFrame );
-    g_pImmediateContext->PSSetShader( g_pPixelShader, nullptr, 0 );
-    g_pImmediateContext->PSSetConstantBuffers( 2, 1, &g_pCBChangesEveryFrame );
-    g_pImmediateContext->PSSetShaderResources( 0, 1, &g_pTextureRV );
-    g_pImmediateContext->PSSetSamplers( 0, 1, &g_pSamplerLinear );
-    g_pImmediateContext->DrawIndexed( 36, 0, 0 );
+	//
+	// Render the cube
+	//
+	g_pImmediateContext->VSSetShader( g_pVertexShader, nullptr, 0 );
+	g_pImmediateContext->VSSetConstantBuffers( 0, 1, &g_pCBNeverChanges );
+	g_pImmediateContext->VSSetConstantBuffers( 1, 1, &g_pCBChangeOnResize );
+	g_pImmediateContext->VSSetConstantBuffers( 2, 1, &g_pCBChangesEveryFrame );
+	g_pImmediateContext->PSSetShader( g_pPixelShader, nullptr, 0 );
+	g_pImmediateContext->PSSetConstantBuffers( 2, 1, &g_pCBChangesEveryFrame );
+	g_pImmediateContext->PSSetShaderResources( 0, 1, &g_pTextureRV );
+	g_pImmediateContext->PSSetSamplers( 0, 1, &g_pSamplerLinear );
+	g_pImmediateContext->DrawIndexed( 36, 0, 0 );
 
-    //
-    // Present our back buffer to our front buffer
-    //
-    g_pSwapChain->Present( 0, 0 );
+	//
+	// Present our back buffer to our front buffer
+	//
+	g_pSwapChain->Present( 0, 0 );
 }
