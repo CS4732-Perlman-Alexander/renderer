@@ -1,7 +1,6 @@
 #include "Rndrr.hpp"
 #include <d3dcompiler.h>
 #include "DDSTextureLoader.h"
-//#include <d3d11_1.h>
 
 Rndrr::Rndrr()
 {
@@ -200,4 +199,66 @@ auto Rndrr::initMatrices(long width, long height, DirectX::XMMATRIX& world, Dire
 	CBChangeOnResize cbChangesOnResize;
 	cbChangesOnResize.mProjection = XMMatrixTranspose(projection);
 	immediateContext->UpdateSubresource(pcbChangeOnResize, 0, nullptr, &cbChangesOnResize, 0, 0);
+}
+
+auto Rndrr::initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices, ID3D11Device*& pd3dDevice, ID3D11Buffer*& pVertexBuffer, ID3D11Buffer*& pIndexBuffer, ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pcbNeverChanges, ID3D11Buffer*& pcbChangeOnResize, ID3D11Buffer*& pcbChangesEveryFrame)->HRESULT
+{
+	auto hr = S_OK;
+	// Create vertex buffer
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(SimpleVertex) * numVertices;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	D3D11_SUBRESOURCE_DATA InitData;
+	ZeroMemory(&InitData, sizeof(InitData));
+	InitData.pSysMem = vertices;
+	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &pVertexBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// Set vertex buffer
+	auto stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	immediateContext->IASetVertexBuffers(0, 1, &pVertexBuffer, &stride, &offset);
+
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(WORD) * numIndices;
+	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	InitData.pSysMem = indices;
+	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &pIndexBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// Set index buffer
+	immediateContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+	// Create the constant buffers
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(CBNeverChanges);
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = 0;
+	hr = pd3dDevice->CreateBuffer(&bd, nullptr, &pcbNeverChanges);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	bd.ByteWidth = sizeof(CBChangeOnResize);
+	hr = pd3dDevice->CreateBuffer(&bd, nullptr, &pcbChangeOnResize);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	bd.ByteWidth = sizeof(CBChangesEveryFrame);
+	hr = pd3dDevice->CreateBuffer(&bd, nullptr, &pcbChangesEveryFrame);
+
+	return hr;
 }

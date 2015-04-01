@@ -14,34 +14,13 @@
 #include "DDSTextureLoader.h"
 #include "resource.h"
 #include "Rndrr.hpp"
+#include "RndrrStructures.hpp"
 
 using namespace DirectX;
 
 //--------------------------------------------------------------------------------------
 // Structures
 //--------------------------------------------------------------------------------------
-struct SimpleVertex
-{
-	XMFLOAT3 Pos;
-	XMFLOAT2 Tex;
-};
-
-struct CBNeverChanges
-{
-	XMMATRIX mView;
-};
-
-struct CBChangeOnResize
-{
-	XMMATRIX mProjection;
-};
-
-struct CBChangesEveryFrame
-{
-	XMMATRIX mWorld;
-	XMFLOAT4 vMeshColor;
-};
-
 
 //--------------------------------------------------------------------------------------
 // Global Variables
@@ -83,12 +62,12 @@ auto initDevice(long width, long height) -> HRESULT;
 auto initialize() -> HRESULT;
 auto CleanupDevice() -> void;
 auto CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM ) -> LRESULT;
-auto Render() -> void;
+auto renderFunction() -> void;
 //auto createDepthStencilTextureAndView(long width, long height) -> HRESULT;
 //auto setupViewport(long width, long height) -> void;
 //auto initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob)->HRESULT;
 //auto createInputLayout(ID3DBlob*& pVSBlob)->HRESULT;
-auto initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices)->HRESULT;
+//auto initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices)->HRESULT;
 //auto initTexture()->HRESULT;
 //auto initMatrices(long width, long height) -> void;
 
@@ -125,7 +104,8 @@ auto WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		}
 		else
 		{
-			Render();
+			//Render();
+			renderer->render(renderFunction);
 		}
 	}
 
@@ -256,7 +236,6 @@ auto initialize() -> HRESULT
 	}
 
 	// Define and create the input layout.
-	//hr = createInputLayout(pVSBlob);
 	hr = renderer->createInputLayout(pVSBlob, g_pd3dDevice, g_pVertexLayout);
 
 	pVSBlob->Release();
@@ -323,7 +302,8 @@ auto initialize() -> HRESULT
 		23,20,22
 	};
 
-	hr = initBuffers(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices));
+	hr = renderer->initBuffers(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices), g_pd3dDevice, g_pVertexBuffer, g_pIndexBuffer, g_pImmediateContext, g_pCBNeverChanges, g_pCBChangeOnResize, g_pCBChangesEveryFrame);
+
 	if (FAILED(hr))
 	{
 		return hr;
@@ -602,6 +582,7 @@ auto createInputLayout(ID3DBlob*& pVSBlob) -> HRESULT
 }
 */
 
+/*
 auto initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices) -> HRESULT
 {
 	auto hr = S_OK;
@@ -663,6 +644,7 @@ auto initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices
 
 	return hr;
 }
+*/
 
 /*
 auto initTexture() -> HRESULT
@@ -776,7 +758,7 @@ auto CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) -
 //--------------------------------------------------------------------------------------
 // Render a frame
 //--------------------------------------------------------------------------------------
-auto Render() -> void
+auto renderFunction() -> void
 {
 	// Update our time
 	static auto t = 0.0f;
@@ -832,8 +814,4 @@ auto Render() -> void
 	g_pImmediateContext->PSSetSamplers( 0, 1, &g_pSamplerLinear );
 	g_pImmediateContext->DrawIndexed( 36, 0, 0 );
 
-	//
-	// Present our back buffer to our front buffer
-	//
-	g_pSwapChain->Present( 0, 0 );
 }
