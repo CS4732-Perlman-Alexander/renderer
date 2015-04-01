@@ -13,6 +13,7 @@
 #include <directxcolors.h>
 #include "DDSTextureLoader.h"
 #include "resource.h"
+#include "Rndrr.hpp"
 
 using namespace DirectX;
 
@@ -72,7 +73,7 @@ XMMATRIX                            g_World;
 XMMATRIX                            g_View;
 XMMATRIX                            g_Projection;
 XMFLOAT4                            g_vMeshColor( 0.7f, 0.7f, 0.7f, 1.0f );
-
+Rndrr* renderer;
 
 //--------------------------------------------------------------------------------------
 // Forward declarations
@@ -83,13 +84,13 @@ auto initialize() -> HRESULT;
 auto CleanupDevice() -> void;
 auto CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM ) -> LRESULT;
 auto Render() -> void;
-auto createDepthStencilTextureAndView(long width, long height) -> HRESULT;
-auto setupViewport(long width, long height) -> void;
-auto initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob)->HRESULT;
-auto createInputLayout(ID3DBlob*& pVSBlob)->HRESULT;
+//auto createDepthStencilTextureAndView(long width, long height) -> HRESULT;
+//auto setupViewport(long width, long height) -> void;
+//auto initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob)->HRESULT;
+//auto createInputLayout(ID3DBlob*& pVSBlob)->HRESULT;
 auto initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices)->HRESULT;
-auto initTexture()->HRESULT;
-auto initMatrices(long width, long height) -> void;
+//auto initTexture()->HRESULT;
+//auto initMatrices(long width, long height) -> void;
 
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -99,6 +100,8 @@ auto WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 {
 	UNREFERENCED_PARAMETER( hPrevInstance );
 	UNREFERENCED_PARAMETER( lpCmdLine );
+
+	renderer = new Rndrr();
 
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 	{
@@ -178,6 +181,7 @@ auto InitWindow(HINSTANCE hInstance, int nCmdShow) -> HRESULT
 //
 // With VS 11, we could load up prebuilt .cso files instead...
 //--------------------------------------------------------------------------------------
+/*
 auto CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut ) -> HRESULT
 {
 	auto hr = S_OK;
@@ -214,6 +218,7 @@ auto CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szSha
 
 	return S_OK;
 }
+*/
 
 auto initialize() -> HRESULT
 {
@@ -230,7 +235,7 @@ auto initialize() -> HRESULT
 	}
 	
 	// Depth stencil texture and view.
-	hr = createDepthStencilTextureAndView(width, height);
+	hr = renderer->createDepthStencilTextureAndView(width, height, g_pd3dDevice, g_pDepthStencil, g_pDepthStencilView, g_pImmediateContext, g_pRenderTargetView);
 	if (FAILED(hr))
 	{
 		return hr;
@@ -239,19 +244,21 @@ auto initialize() -> HRESULT
 	g_pImmediateContext->OMSetRenderTargets( 1, &g_pRenderTargetView, g_pDepthStencilView );
 
 	// Setup the viewport
-	setupViewport(width, height);
-	
+	renderer->setupViewport(width, height, g_pImmediateContext);
+
 	// Initialize the shaders.
 	ID3DBlob* pVSBlob = nullptr;
 	ID3DBlob* pPSBlob = nullptr;
-	hr = initShaders(pVSBlob, pPSBlob);
+	hr = renderer->initShaders(pVSBlob, pPSBlob, g_pd3dDevice, g_pVertexShader, g_pPixelShader);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
 	// Define and create the input layout.
-	hr = createInputLayout(pVSBlob);
+	//hr = createInputLayout(pVSBlob);
+	hr = renderer->createInputLayout(pVSBlob, g_pd3dDevice, g_pVertexLayout);
+
 	pVSBlob->Release();
 	if (FAILED(hr))
 	{
@@ -325,13 +332,14 @@ auto initialize() -> HRESULT
 	// Set primitive topology
 	g_pImmediateContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
-	hr = initTexture();
+	hr = renderer->initTexture(g_pd3dDevice, g_pTextureRV, g_pSamplerLinear);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	initMatrices(width, height);
+	//initMatrices(width, height);
+	renderer->initMatrices(width, height, g_World, g_View, g_Projection, g_pImmediateContext, g_pCBNeverChanges, g_pCBChangeOnResize);
 
 	return S_OK;
 }
@@ -483,6 +491,7 @@ auto initDevice(long width, long height) -> HRESULT
 	return hr;
 }
 
+/*
 auto createDepthStencilTextureAndView(long width, long height) -> HRESULT
 {
 	auto hr = S_OK;
@@ -521,7 +530,9 @@ auto createDepthStencilTextureAndView(long width, long height) -> HRESULT
 	g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
 	return hr;
 }
+*/
 
+/*
 auto setupViewport(long width, long height) -> void
 {
 	D3D11_VIEWPORT vp;
@@ -533,12 +544,14 @@ auto setupViewport(long width, long height) -> void
 	vp.TopLeftY = 0;
 	g_pImmediateContext->RSSetViewports(1, &vp);
 }
+*/
 
+/*
 auto initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob) -> HRESULT
 {
 	auto hr = S_OK;
 	// Compile the vertex shader
-	hr = CompileShaderFromFile(L"Renderer.fx", "VS", "vs_4_0", &pVSBlob);
+	hr = renderer->compileShaderFromFile(L"Renderer.fx", "VS", "vs_4_0", &pVSBlob);
 	if (FAILED(hr))
 	{
 		MessageBox(nullptr,
@@ -555,7 +568,7 @@ auto initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob) -> HRESULT
 	}
 
 	// Compile the pixel shader
-	hr = CompileShaderFromFile(L"Renderer.fx", "PS", "ps_4_0", &pPSBlob);
+	hr = renderer->compileShaderFromFile(L"Renderer.fx", "PS", "ps_4_0", &pPSBlob);
 	if (FAILED(hr))
 	{
 		MessageBox(nullptr,
@@ -568,7 +581,9 @@ auto initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob) -> HRESULT
 	pPSBlob->Release();
 	return hr;
 }
+*/
 
+/*
 auto createInputLayout(ID3DBlob*& pVSBlob) -> HRESULT
 {
 	auto hr = S_OK;
@@ -585,6 +600,7 @@ auto createInputLayout(ID3DBlob*& pVSBlob) -> HRESULT
 		pVSBlob->GetBufferSize(), &g_pVertexLayout);
 	return hr;
 }
+*/
 
 auto initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices) -> HRESULT
 {
@@ -648,6 +664,7 @@ auto initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices
 	return hr;
 }
 
+/*
 auto initTexture() -> HRESULT
 {
 	auto hr = S_OK;
@@ -672,7 +689,9 @@ auto initTexture() -> HRESULT
 
 	return hr;
 }
+*/
 
+/*
 auto initMatrices(long width, long height) -> void
 {
 	// Initialize the world matrices
@@ -695,6 +714,7 @@ auto initMatrices(long width, long height) -> void
 	cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
 	g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize, 0, nullptr, &cbChangesOnResize, 0, 0);
 }
+*/
 
 //--------------------------------------------------------------------------------------
 // Clean up the objects we've created
