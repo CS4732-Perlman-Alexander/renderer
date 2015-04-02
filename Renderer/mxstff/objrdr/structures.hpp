@@ -17,6 +17,7 @@ struct vector3
 	float y;
 	float z;
 };
+
 struct vector2
 {
 	float x;
@@ -25,13 +26,13 @@ struct vector2
 
 struct OBJObject
 {
-	std::string				name;
-	std::string				material;
-	std::vector<vector3>	vertices;
-	std::vector<vector2>	textureCoordinates;
-	std::vector<vector3>	normals;
-	std::vector<face>		faces;
-	bool					smoothing;
+	std::string					name;
+	std::string					material;
+	std::vector<struct vector3>	vertices;
+	std::vector<struct vector2>	textureCoordinates;
+	std::vector<struct vector3>	normals;
+	std::vector<class face>		faces;
+	bool						smoothing;
 };
 
 struct mesh

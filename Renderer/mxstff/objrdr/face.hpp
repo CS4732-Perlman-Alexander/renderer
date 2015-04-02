@@ -3,19 +3,19 @@
 class face
 {
 public:
-	vector3 *posX;
-	vector3 *posY;
-	vector3 *posZ;
-	vector2 *tcX;
-	vector2 *tcY;
-	vector2 *tcZ;
-	vector3 *normX;
-	vector3 *normY;
-	vector3 *normZ;
+	struct vector3 *posX;
+	struct vector3 *posY;
+	struct vector3 *posZ;
+	struct vector2 *tcX;
+	struct vector2 *tcY;
+	struct vector2 *tcZ;
+	struct vector3 *normX;
+	struct vector3 *normY;
+	struct vector3 *normZ;
 
 	face();
-	face(vector3& pX, vector3& pY, vector3& pZ);
-	face(vector3& pX, vector3& pY, vector3& pZ, vector2& tX, vector2& tY, vector2& tZ);
-	face(vector3& pX, vector3& pY, vector3& pZ, vector2& tX, vector2& tY, vector2& tZ, vector3& nX, vector3& nY, vector3& nZ);
+	face(struct vector3& pX, struct vector3& pY, struct vector3& pZ);
+	face(struct vector3& pX, struct vector3& pY, struct vector3& pZ, struct vector2& tX, struct vector2& tY, struct vector2& tZ);
+	face(struct vector3& pX, struct vector3& pY, struct vector3& pZ, struct vector2& tX, struct vector2& tY, struct vector2& tZ, struct vector3& nX, struct vector3& nY, struct vector3& nZ);
 	~face();
 };

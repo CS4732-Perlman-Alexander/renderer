@@ -13,11 +13,11 @@ face::face()
 	normZ = nullptr;
 }
 
-face::face(vector3& pX, vector3& pY, vector3& pZ)
+face::face(struct vector3& pX, struct vector3& pY, struct vector3& pZ)
 {
-	*posX = pX;
-	*posY = pY;
-	*posZ = pZ;
+	posX = &pX;
+	posY = &pY;
+	posZ = &pZ;
 	tcX = nullptr;
 	tcY = nullptr;
 	tcZ = nullptr;
@@ -26,29 +26,29 @@ face::face(vector3& pX, vector3& pY, vector3& pZ)
 	normZ = nullptr;
 }
 
-face::face(vector3& pX, vector3& pY, vector3& pZ, vector2& tX, vector2& tY, vector2& tZ)
+face::face(struct vector3& pX, struct vector3& pY, struct vector3& pZ, struct vector2& tX, struct vector2& tY, struct vector2& tZ)
 {
-	*posX = pX;
-	*posY = pY;
-	*posZ = pZ;
-	*tcX = tX;
-	*tcY = tY;
-	*tcZ = tZ;
+	posX = &pX;
+	posY = &pY;
+	posZ = &pZ;
+	tcX = &tX;
+	tcY = &tY;
+	tcZ = &tZ;
 	normX = nullptr;
 	normY = nullptr;
 	normZ = nullptr;
 }
-face::face(vector3& pX, vector3& pY, vector3& pZ, vector2& tX, vector2& tY, vector2& tZ, vector3& nX, vector3& nY, vector3& nZ)
+face::face(struct vector3& pX, struct vector3& pY, struct vector3& pZ, struct vector2& tX, struct vector2& tY, struct vector2& tZ, struct vector3& nX, struct vector3& nY, struct vector3& nZ)
 {
-	*posX = pX;
-	*posY = pY;
-	*posZ = pZ;
-	*tcX = tX;
-	*tcY = tY;
-	*tcZ = tZ;
-	*normX = nX;
-	*normY = nY;
-	*normZ = nZ;
+	posX = &pX;
+	posY = &pY;
+	posZ = &pZ;
+	tcX = &tX;
+	tcY = &tY;
+	tcZ = &tZ;
+	normX = &nX;
+	normY = &nY;
+	normZ = &nZ;
 }
 
 face::~face()
