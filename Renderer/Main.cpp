@@ -58,7 +58,7 @@ Rndrr* renderer;
 // Forward declarations
 //--------------------------------------------------------------------------------------
 auto InitWindow(HINSTANCE hInstance, int nCmdShow) -> HRESULT;
-auto initDevice(long width, long height) -> HRESULT;
+//auto initDevice(long width, long height) -> HRESULT;
 auto initialize() -> HRESULT;
 auto CleanupDevice() -> void;
 auto CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM ) -> LRESULT;
@@ -104,7 +104,6 @@ auto WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		}
 		else
 		{
-			//Render();
 			renderer->render(renderFunction);
 		}
 	}
@@ -140,7 +139,7 @@ auto InitWindow(HINSTANCE hInstance, int nCmdShow) -> HRESULT
 
 	// Create window
 	g_hInst = hInstance;
-	RECT rc = { 0, 0, 800, 600 };
+	RECT rc = { 0, 0, 1280, 720 };
 	AdjustWindowRect( &rc, WS_OVERLAPPEDWINDOW, FALSE );
 	g_hWnd = CreateWindow( L"RenderingWindowClass", L"Direct3D Rendering Test",
 		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
@@ -208,7 +207,7 @@ auto initialize() -> HRESULT
 	auto height = rc.bottom - rc.top;
 
 	// Initialize devices.
-	auto hr = initDevice(width, height);
+	auto hr = renderer->initDevice(width, height, g_pd3dDevice, g_pd3dDevice1, g_featureLevel, g_pImmediateContext, g_hWnd, g_pSwapChain, g_pSwapChain1, g_pRenderTargetView);
 	if (FAILED(hr))
 	{
 		return hr;
@@ -327,6 +326,7 @@ auto initialize() -> HRESULT
 //--------------------------------------------------------------------------------------
 // Create Direct3D device and swap chain
 //--------------------------------------------------------------------------------------
+/*
 auto initDevice(long width, long height) -> HRESULT
 {
 	auto hr = S_OK;
@@ -341,7 +341,7 @@ auto initDevice(long width, long height) -> HRESULT
 		D3D_DRIVER_TYPE_WARP,
 		D3D_DRIVER_TYPE_REFERENCE,
 	};
-	auto numDriverTypes = ARRAYSIZE(driverTypes);
+	//auto numDriverTypes = ARRAYSIZE(driverTypes);
 
 	D3D_FEATURE_LEVEL featureLevels[] =
 	{
@@ -470,6 +470,7 @@ auto initDevice(long width, long height) -> HRESULT
 	pBackBuffer->Release();
 	return hr;
 }
+*/
 
 /*
 auto createDepthStencilTextureAndView(long width, long height) -> HRESULT

@@ -262,3 +262,147 @@ auto Rndrr::initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD 
 
 	return hr;
 }
+
+auto Rndrr::initDevice(long width, long height, ID3D11Device*& pd3dDevice, ID3D11Device1*& pd3dDevice1, D3D_FEATURE_LEVEL& featurelevel, ID3D11DeviceContext*& immediateContext, HWND& hWnd, IDXGISwapChain*& pSwapchain, IDXGISwapChain1*& pSwapchain1, ID3D11RenderTargetView*& pRenderTargetView)->HRESULT
+{
+	auto hr = S_OK;
+	auto createDeviceFlags = 0;
+#ifdef _DEBUG
+	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+	D3D_DRIVER_TYPE driverTypes[] =
+	{
+		D3D_DRIVER_TYPE_HARDWARE,
+		D3D_DRIVER_TYPE_WARP,
+		D3D_DRIVER_TYPE_REFERENCE,
+	};
+	//auto numDriverTypes = ARRAYSIZE(driverTypes);
+
+	D3D_FEATURE_LEVEL featureLevels[] =
+	{
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_10_0,
+	};
+	auto numFeatureLevels = ARRAYSIZE(featureLevels);
+
+	for (auto g_driverType : driverTypes)
+	{
+		hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
+			D3D11_SDK_VERSION, &pd3dDevice, &featurelevel, &immediateContext);
+
+		if (hr == E_INVALIDARG)
+		{
+			// DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
+			hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, &featureLevels[1], numFeatureLevels - 1,
+				D3D11_SDK_VERSION, &pd3dDevice, &featurelevel, &immediateContext);
+		}
+
+		if (SUCCEEDED(hr))
+		{
+			break;
+		}
+	}
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// Obtain DXGI factory from device (since we used nullptr for pAdapter above)
+	IDXGIFactory1* dxgiFactory = nullptr;
+	{
+		IDXGIDevice* dxgiDevice = nullptr;
+		hr = pd3dDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
+		if (SUCCEEDED(hr))
+		{
+			IDXGIAdapter* adapter = nullptr;
+			hr = dxgiDevice->GetAdapter(&adapter);
+			if (SUCCEEDED(hr))
+			{
+				hr = adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&dxgiFactory));
+				adapter->Release();
+			}
+			dxgiDevice->Release();
+		}
+	}
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// Create swap chain
+	IDXGIFactory2* dxgiFactory2 = nullptr;
+	hr = dxgiFactory->QueryInterface(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(&dxgiFactory2));
+	if (dxgiFactory2)
+	{
+		// DirectX 11.1 or later
+		hr = pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(&pd3dDevice1));
+		if (SUCCEEDED(hr))
+		{
+			immediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&immediateContext));
+			static_cast<void>(immediateContext);
+		}
+
+		DXGI_SWAP_CHAIN_DESC1 sd;
+		ZeroMemory(&sd, sizeof(sd));
+		sd.Width = width;
+		sd.Height = height;
+		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		sd.SampleDesc.Count = 1;
+		sd.SampleDesc.Quality = 0;
+		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		sd.BufferCount = 1;
+
+		hr = dxgiFactory2->CreateSwapChainForHwnd(pd3dDevice, hWnd, &sd, nullptr, nullptr, &pSwapchain1);
+		if (SUCCEEDED(hr))
+		{
+			hr = pSwapchain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(&pSwapchain));
+		}
+
+		dxgiFactory2->Release();
+	}
+	else
+	{
+		// DirectX 11.0 systems
+		DXGI_SWAP_CHAIN_DESC sd;
+		ZeroMemory(&sd, sizeof(sd));
+		sd.BufferCount = 1;
+		sd.BufferDesc.Width = width;
+		sd.BufferDesc.Height = height;
+		sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		sd.BufferDesc.RefreshRate.Numerator = 60;
+		sd.BufferDesc.RefreshRate.Denominator = 1;
+		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		sd.OutputWindow = hWnd;
+		sd.SampleDesc.Count = 1;
+		sd.SampleDesc.Quality = 0;
+		sd.Windowed = TRUE;
+
+		hr = dxgiFactory->CreateSwapChain(pd3dDevice, &sd, &pSwapchain);
+	}
+
+	// Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
+	dxgiFactory->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER);
+
+	dxgiFactory->Release();
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// Create a render target view
+	ID3D11Texture2D* pBackBuffer = nullptr;
+	hr = pSwapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	hr = pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView);
+	pBackBuffer->Release();
+	return hr;
+}
