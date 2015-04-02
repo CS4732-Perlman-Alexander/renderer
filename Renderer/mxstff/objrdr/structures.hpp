@@ -35,8 +35,27 @@ struct OBJObject
 	bool						smoothing;
 };
 
+struct material
+{
+	std::string		name;
+	struct vector3	ambient;
+	struct vector3	diffuse;
+	struct vector3	specular;
+	int				illumination;
+	float			shininess;
+	float			transparencey;
+	std::string		textureName;
+};
+
+struct materials
+{
+	std::vector<material>		materialList;
+	std::vector<std::string>	textures;
+};
+
 struct mesh
 {
 	std::string				materialLibrary;
 	std::vector<OBJObject>	objObjects;
+	struct materials		objMaterials;
 };
