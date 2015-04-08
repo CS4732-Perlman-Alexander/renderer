@@ -1,17 +1,49 @@
 #include "Rndrr.hpp"
+#include "resource.h"
 #include <d3dcompiler.h>
 #include "DDSTextureLoader.h"
+#include <directxmath.h>
+
+#include <iostream>
 
 Rndrr::Rndrr()
 {
+	g_hInst = nullptr;
+	g_hWnd = nullptr;
+	g_driverType = D3D_DRIVER_TYPE_NULL;
+	g_pd3dDevice = nullptr;
+	g_pd3dDevice1 = nullptr;
+	g_pImmediateContext = nullptr;
+	g_pImmediateContext1 = nullptr;
+	g_pSwapChain = nullptr;
+	g_pSwapChain1 = nullptr;
+	g_pRenderTargetView = nullptr;
+	g_pDepthStencil = nullptr;
+	g_pDepthStencilView = nullptr;
+	g_pVertexShader = nullptr;
+	g_pPixelShader = nullptr;
+	g_pVertexBuffer = nullptr;
+	g_pIndexBuffer = nullptr;
+	g_pVertexLayout = nullptr;
+	g_pCBNeverChanges = nullptr;
+	g_pCBChangeOnResize = nullptr;
+	g_pCBChangesEveryFrame = nullptr;
+	g_pTextureRV = nullptr;
+	g_vMeshColor = DirectX::XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
+	g_pSamplerLinear = nullptr;
+	g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 }
 
+//getter and setter for immediate context?
+//getter and setter for world, view projection
+//driver type getter and setter?
+//mesh color getter and setter
 
 Rndrr::~Rndrr()
 {
 }
 
-auto Rndrr::setupViewport(long width, long height, ID3D11DeviceContext*& immediateContext) -> void
+auto Rndrr::setupViewport(long width, long height) -> void
 {
 	D3D11_VIEWPORT vp;
 	vp.Width = static_cast<FLOAT>(width);
@@ -20,10 +52,48 @@ auto Rndrr::setupViewport(long width, long height, ID3D11DeviceContext*& immedia
 	vp.MaxDepth = 1.0f;
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
-	immediateContext->RSSetViewports(1, &vp);
+	g_pImmediateContext->RSSetViewports(1, &vp);
 }
 
-auto Rndrr::createInputLayout(ID3DBlob*& pVSBlob, ID3D11Device*& pd3dDevice, ID3D11InputLayout*& pVertexLayout)->HRESULT
+
+auto Rndrr::InitWindow(WNDPROC WndProc, int nCmdShow) -> HRESULT
+{
+	WNDCLASSEX wcex;
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = g_hInst;
+	wcex.hIcon = LoadIcon(g_hInst, reinterpret_cast<LPCTSTR>(IDI_TUTORIAL1));
+	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
+	wcex.lpszMenuName = nullptr;
+	wcex.lpszClassName = L"RenderingWindowClass";
+	wcex.hIconSm = LoadIcon(wcex.hInstance, reinterpret_cast<LPCTSTR>(IDI_TUTORIAL1));
+	if (!RegisterClassEx(&wcex))
+	{
+		return E_FAIL;
+	}
+
+	// Create window
+	RECT rc = { 0, 0, 1280, 720 };
+	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+	g_hWnd = CreateWindow(L"RenderingWindowClass", L"Direct3D Rendering Test",
+		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+		CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, g_hInst,
+		nullptr);
+	if (!g_hWnd)
+	{
+		return E_FAIL;
+	}
+
+	ShowWindow(g_hWnd, nCmdShow);
+
+	return S_OK;
+}
+
+auto Rndrr::createInputLayout(ID3DBlob*& pVSBlob)->HRESULT
 {
 	auto hr = S_OK;
 	// Define the input layout
@@ -35,8 +105,8 @@ auto Rndrr::createInputLayout(ID3DBlob*& pVSBlob, ID3D11Device*& pd3dDevice, ID3
 	auto numElements = ARRAYSIZE(layout);
 
 	// Create the input layout
-	hr = pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
-		pVSBlob->GetBufferSize(), &pVertexLayout);
+	hr = g_pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
+		pVSBlob->GetBufferSize(), &g_pVertexLayout);
 	return hr;
 }
 
@@ -77,7 +147,7 @@ auto Rndrr::compileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR
 	return S_OK;
 }
 
-auto Rndrr::createDepthStencilTextureAndView(long width, long height, ID3D11Device*& pd3dDevice, ID3D11Texture2D*& pDepthStencil, ID3D11DepthStencilView*& pDepthStencilView, ID3D11DeviceContext*& immediateContext, ID3D11RenderTargetView*& pRenderTargetView)->HRESULT
+auto Rndrr::createDepthStencilTextureAndView(long width, long height)->HRESULT
 {
 	auto hr = S_OK;
 	// Create depth stencil texture
@@ -94,7 +164,7 @@ auto Rndrr::createDepthStencilTextureAndView(long width, long height, ID3D11Devi
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
-	hr = pd3dDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil);
+	hr = g_pd3dDevice->CreateTexture2D(&descDepth, nullptr, &g_pDepthStencil);
 	if (FAILED(hr))
 	{
 		return hr;
@@ -106,21 +176,21 @@ auto Rndrr::createDepthStencilTextureAndView(long width, long height, ID3D11Devi
 	descDSV.Format = descDepth.Format;
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
-	hr = pd3dDevice->CreateDepthStencilView(pDepthStencil, &descDSV, &pDepthStencilView);
+	hr = g_pd3dDevice->CreateDepthStencilView(g_pDepthStencil, &descDSV, &g_pDepthStencilView);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	immediateContext->OMSetRenderTargets(1, &pRenderTargetView, pDepthStencilView);
+	g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
 	return hr;
 }
 
-auto Rndrr::initTexture(ID3D11Device*& pd3dDevice, ID3D11ShaderResourceView*& pTextureRV, ID3D11SamplerState*& pSamplerLinear)->HRESULT
+auto Rndrr::initTexture()->HRESULT
 {
 	auto hr = S_OK;
 	// Load the Texture
-	hr = DirectX::CreateDDSTextureFromFile(pd3dDevice, L"seafloor.dds", nullptr, &pTextureRV);
+	hr = DirectX::CreateDDSTextureFromFile(g_pd3dDevice, L"seafloor.dds", nullptr, &g_pTextureRV);
 	if (FAILED(hr))
 	{
 		return hr;
@@ -136,14 +206,15 @@ auto Rndrr::initTexture(ID3D11Device*& pd3dDevice, ID3D11ShaderResourceView*& pT
 	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	hr = pd3dDevice->CreateSamplerState(&sampDesc, &pSamplerLinear);
+	hr = g_pd3dDevice->CreateSamplerState(&sampDesc, &g_pSamplerLinear);
 
 	return hr;
 }
 
-auto Rndrr::initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob, ID3D11Device*& pd3dDevice, ID3D11VertexShader*& pVertexShader, ID3D11PixelShader*& pPixelShader)->HRESULT
+auto Rndrr::initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob)->HRESULT
 {
 	auto hr = S_OK;
+
 	// Compile the vertex shader
 	hr = compileShaderFromFile(L"Renderer.fx", "VS", "vs_4_0", &pVSBlob);
 	if (FAILED(hr))
@@ -154,7 +225,7 @@ auto Rndrr::initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob, ID3D11Device*& p
 	}
 
 	// Create the vertex shader
-	hr = pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &pVertexShader);
+	hr = g_pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);
 	if (FAILED(hr))
 	{
 		pVSBlob->Release();
@@ -171,37 +242,37 @@ auto Rndrr::initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob, ID3D11Device*& p
 	}
 
 	// Create the pixel shader
-	hr = pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &pPixelShader);
+	hr = g_pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &g_pPixelShader);
 	pPSBlob->Release();
 	return hr;
 }
 
-auto Rndrr::initMatrices(long width, long height, DirectX::XMMATRIX& world, DirectX::XMMATRIX& view, DirectX::XMMATRIX& projection, ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pcbNeverChanges, ID3D11Buffer*& pcbChangeOnResize) -> void
+auto Rndrr::initMatrices(long width, long height) -> void
 {
-	using namespace DirectX; // for matrix math
+	using namespace DirectX;
 
 	// Initialize the world matrices
-	world = XMMatrixIdentity();
+	g_World = XMMatrixIdentity();
 
 	// Initialize the view matrix
 	auto Eye = XMVectorSet(0.0f, 3.0f, -6.0f, 0.0f);
 	auto At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	auto Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	view = XMMatrixLookAtLH(Eye, At, Up);
+	g_View = XMMatrixLookAtLH(Eye, At, Up);
 
 	CBNeverChanges cbNeverChanges;
-	cbNeverChanges.mView = XMMatrixTranspose(view);
-	immediateContext->UpdateSubresource(pcbNeverChanges, 0, nullptr, &cbNeverChanges, 0, 0);
+	cbNeverChanges.mView = XMMatrixTranspose(g_View);
+	g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges, 0, nullptr, &cbNeverChanges, 0, 0);
 
 	// Initialize the projection matrix
-	projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, width / static_cast<FLOAT>(height), 0.01f, 100.0f);
+	g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, width / static_cast<FLOAT>(height), 0.01f, 100.0f);
 
 	CBChangeOnResize cbChangesOnResize;
-	cbChangesOnResize.mProjection = XMMatrixTranspose(projection);
-	immediateContext->UpdateSubresource(pcbChangeOnResize, 0, nullptr, &cbChangesOnResize, 0, 0);
+	cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+	g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize, 0, nullptr, &cbChangesOnResize, 0, 0);
 }
 
-auto Rndrr::initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices, ID3D11Device*& pd3dDevice, ID3D11Buffer*& pVertexBuffer, ID3D11Buffer*& pIndexBuffer, ID3D11DeviceContext*& immediateContext, ID3D11Buffer*& pcbNeverChanges, ID3D11Buffer*& pcbChangeOnResize, ID3D11Buffer*& pcbChangesEveryFrame)->HRESULT
+auto Rndrr::initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices)->HRESULT
 {
 	auto hr = S_OK;
 	// Create vertex buffer
@@ -214,56 +285,54 @@ auto Rndrr::initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD 
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
 	InitData.pSysMem = vertices;
-	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &pVertexBuffer);
+	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
-
 	// Set vertex buffer
 	auto stride = sizeof(SimpleVertex);
 	UINT offset = 0;
-	immediateContext->IASetVertexBuffers(0, 1, &pVertexBuffer, &stride, &offset);
+	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(WORD) * numIndices;
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	InitData.pSysMem = indices;
-	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &pIndexBuffer);
+	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
-
 	// Set index buffer
-	immediateContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	// Create the constant buffers
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(CBNeverChanges);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
-	hr = pd3dDevice->CreateBuffer(&bd, nullptr, &pcbNeverChanges);
+	hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_pCBNeverChanges);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
 	bd.ByteWidth = sizeof(CBChangeOnResize);
-	hr = pd3dDevice->CreateBuffer(&bd, nullptr, &pcbChangeOnResize);
+	hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_pCBChangeOnResize);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
 	bd.ByteWidth = sizeof(CBChangesEveryFrame);
-	hr = pd3dDevice->CreateBuffer(&bd, nullptr, &pcbChangesEveryFrame);
+	hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_pCBChangesEveryFrame);
 
 	return hr;
 }
 
-auto Rndrr::initDevice(long width, long height, ID3D11Device*& pd3dDevice, ID3D11Device1*& pd3dDevice1, D3D_FEATURE_LEVEL& featurelevel, ID3D11DeviceContext*& immediateContext, HWND& hWnd, IDXGISwapChain*& pSwapchain, IDXGISwapChain1*& pSwapchain1, ID3D11RenderTargetView*& pRenderTargetView)->HRESULT
+auto Rndrr::initDevice(long width, long height)->HRESULT
 {
 	auto hr = S_OK;
 	auto createDeviceFlags = 0;
@@ -291,13 +360,13 @@ auto Rndrr::initDevice(long width, long height, ID3D11Device*& pd3dDevice, ID3D1
 	for (auto g_driverType : driverTypes)
 	{
 		hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
-			D3D11_SDK_VERSION, &pd3dDevice, &featurelevel, &immediateContext);
+			D3D11_SDK_VERSION, &g_pd3dDevice, &g_featureLevel, &g_pImmediateContext);
 
 		if (hr == E_INVALIDARG)
 		{
 			// DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
 			hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, &featureLevels[1], numFeatureLevels - 1,
-				D3D11_SDK_VERSION, &pd3dDevice, &featurelevel, &immediateContext);
+				D3D11_SDK_VERSION, &g_pd3dDevice, &g_featureLevel, &g_pImmediateContext);
 		}
 
 		if (SUCCEEDED(hr))
@@ -315,7 +384,7 @@ auto Rndrr::initDevice(long width, long height, ID3D11Device*& pd3dDevice, ID3D1
 	IDXGIFactory1* dxgiFactory = nullptr;
 	{
 		IDXGIDevice* dxgiDevice = nullptr;
-		hr = pd3dDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
+		hr = g_pd3dDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
 		if (SUCCEEDED(hr))
 		{
 			IDXGIAdapter* adapter = nullptr;
@@ -339,11 +408,11 @@ auto Rndrr::initDevice(long width, long height, ID3D11Device*& pd3dDevice, ID3D1
 	if (dxgiFactory2)
 	{
 		// DirectX 11.1 or later
-		hr = pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(&pd3dDevice1));
+		hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(g_pd3dDevice1));
 		if (SUCCEEDED(hr))
 		{
-			immediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&immediateContext));
-			static_cast<void>(immediateContext);
+			g_pImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&g_pImmediateContext1));
+			static_cast<void>(g_pImmediateContext);
 		}
 
 		DXGI_SWAP_CHAIN_DESC1 sd;
@@ -356,10 +425,10 @@ auto Rndrr::initDevice(long width, long height, ID3D11Device*& pd3dDevice, ID3D1
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
 
-		hr = dxgiFactory2->CreateSwapChainForHwnd(pd3dDevice, hWnd, &sd, nullptr, nullptr, &pSwapchain1);
+		hr = dxgiFactory2->CreateSwapChainForHwnd(g_pd3dDevice, g_hWnd, &sd, nullptr, nullptr, &g_pSwapChain1);
 		if (SUCCEEDED(hr))
 		{
-			hr = pSwapchain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(&pSwapchain));
+			hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(&g_pSwapChain));
 		}
 
 		dxgiFactory2->Release();
@@ -376,16 +445,16 @@ auto Rndrr::initDevice(long width, long height, ID3D11Device*& pd3dDevice, ID3D1
 		sd.BufferDesc.RefreshRate.Numerator = 60;
 		sd.BufferDesc.RefreshRate.Denominator = 1;
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		sd.OutputWindow = hWnd;
+		sd.OutputWindow = g_hWnd;
 		sd.SampleDesc.Count = 1;
 		sd.SampleDesc.Quality = 0;
 		sd.Windowed = TRUE;
 
-		hr = dxgiFactory->CreateSwapChain(pd3dDevice, &sd, &pSwapchain);
+		hr = dxgiFactory->CreateSwapChain(g_pd3dDevice, &sd, &g_pSwapChain);
 	}
 
-	// Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
-	dxgiFactory->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER);
+	// Doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
+	dxgiFactory->MakeWindowAssociation(g_hWnd, DXGI_MWA_NO_ALT_ENTER);
 
 	dxgiFactory->Release();
 
@@ -396,13 +465,162 @@ auto Rndrr::initDevice(long width, long height, ID3D11Device*& pd3dDevice, ID3D1
 
 	// Create a render target view
 	ID3D11Texture2D* pBackBuffer = nullptr;
-	hr = pSwapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	hr = pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView);
+	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &g_pRenderTargetView);
 	pBackBuffer->Release();
 	return hr;
+}
+
+auto Rndrr::CleanupDevice() -> void
+{
+	if( g_pImmediateContext ) g_pImmediateContext->ClearState();
+	if( g_pSamplerLinear ) g_pSamplerLinear->Release();
+	if( g_pTextureRV ) g_pTextureRV->Release();
+	if( g_pCBNeverChanges ) g_pCBNeverChanges->Release();
+	if( g_pCBChangeOnResize ) g_pCBChangeOnResize->Release();
+	if( g_pCBChangesEveryFrame ) g_pCBChangesEveryFrame->Release();
+	if( g_pVertexBuffer ) g_pVertexBuffer->Release();
+	if( g_pIndexBuffer ) g_pIndexBuffer->Release();
+	if( g_pVertexLayout ) g_pVertexLayout->Release();
+	if( g_pVertexShader ) g_pVertexShader->Release();
+	if( g_pPixelShader ) g_pPixelShader->Release();
+	if( g_pDepthStencil ) g_pDepthStencil->Release();
+	if( g_pDepthStencilView ) g_pDepthStencilView->Release();
+	if( g_pRenderTargetView ) g_pRenderTargetView->Release();
+	if( g_pSwapChain1 ) g_pSwapChain1->Release();
+	if( g_pSwapChain ) g_pSwapChain->Release();
+	if( g_pImmediateContext1 ) g_pImmediateContext1->Release();
+	if( g_pImmediateContext ) g_pImmediateContext->Release();
+	if( g_pd3dDevice1 ) g_pd3dDevice1->Release();
+	if( g_pd3dDevice ) g_pd3dDevice->Release();
+}
+
+auto Rndrr::initialize() ->HRESULT
+{
+	RECT rc;
+	GetClientRect(g_hWnd, &rc);
+	auto width = rc.right - rc.left;
+	auto height = rc.bottom - rc.top;
+
+	// Initialize devices.
+	auto hr = Rndrr::initDevice(width, height);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// Depth stencil texture and view.
+	hr = Rndrr::createDepthStencilTextureAndView(width, height);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
+
+	// Setup the viewport
+	Rndrr::setupViewport(width, height);
+
+	// Initialize the shaders.
+	ID3DBlob* pVSBlob = nullptr;
+	ID3DBlob* pPSBlob = nullptr;
+	hr = Rndrr::initShaders(pVSBlob, pPSBlob);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// Define and create the input layout.
+	hr = Rndrr::createInputLayout(pVSBlob);
+
+	pVSBlob->Release();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// Set the input layout
+	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
+
+	using DirectX::XMFLOAT2;
+	using DirectX::XMFLOAT3;
+	SimpleVertex vertices[] =
+	{
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
+
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+	};
+
+	// Create index buffer
+	WORD indices[] =
+	{
+		3, 1, 0,
+		2, 1, 3,
+
+		6, 4, 5,
+		7, 4, 6,
+
+		11, 9, 8,
+		10, 9, 11,
+
+		14, 12, 13,
+		15, 12, 14,
+
+		19, 17, 16,
+		18, 17, 19,
+
+		22, 20, 21,
+		23, 20, 22
+	};
+
+	hr = Rndrr::initBuffers(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices));
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	// Set primitive topology
+	g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	hr = Rndrr::initTexture();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	Rndrr::initMatrices(width, height);
+	
+	return S_OK;
 }
