@@ -1,13 +1,18 @@
 #pragma once
+#include <memory>
+#include "resource.h"
 #include <d3d11_1.h>
+#include <d3dcompiler.h>
 #include <directxmath.h>
 #include <directxcolors.h>
+#include "DDSTextureLoader.h"
 #include "RndrrStructures.hpp"
+
 class Rndrr
 {
 private:
-	HINSTANCE					g_hInst;
-	HWND						g_hWnd;
+	std::unique_ptr<HINSTANCE>	g_hInst;
+	std::unique_ptr<HWND>		g_hWnd;
 	D3D_DRIVER_TYPE				g_driverType;
 	ID3D11Device*				g_pd3dDevice;
 	ID3D11Device1*				g_pd3dDevice1;
@@ -33,8 +38,17 @@ private:
 	DirectX::XMMATRIX			g_Projection;
 	DirectX::XMFLOAT4			g_vMeshColor;
 	D3D_FEATURE_LEVEL			g_featureLevel;
+
+
+	SimpleVertex* vertices;
+	unsigned int verticesSize;
+	WORD* indices;
+	unsigned int indicesSize;
+
+
 public:
 	Rndrr();
+	Rndrr(SimpleVertex* v, unsigned int vSize, WORD* i, unsigned int iSize);
 	~Rndrr();
 
 	auto setupViewport(long width, long height) -> void;
@@ -55,11 +69,38 @@ public:
 
 	auto initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices)->HRESULT;
 
-	auto Rndrr::CleanupDevice() -> void;
+	auto CleanupDevice() -> void;
 
-	auto Rndrr::initDevice(long width, long height)->HRESULT;
+	auto initDevice(long width, long height)->HRESULT;
 
 	auto initialize()->HRESULT;
+
+	//Immediate Context: Getters and Setters
+	auto getImmediateContext()->ID3D11DeviceContext*;
+	auto setImmediateContext(ID3D11DeviceContext* iContext)->void;
+
+	//World: Getters and Setters
+	auto getWorld()->DirectX::XMMATRIX;
+	auto setWorld(const DirectX::XMMATRIX& wMatrix)->void;
+
+	//View: Getters and Setters
+	auto getView()->DirectX::XMMATRIX;
+	auto setView(const DirectX::XMMATRIX& vMatrix)->void;
+
+	//Projection: Getters and Setters
+	auto getProjection()->DirectX::XMMATRIX;
+	auto setProjection(const DirectX::XMMATRIX& pMatrix)->void;
+
+	//Driver Type: Getters and Setters
+	auto getDriverType()->D3D_DRIVER_TYPE;
+	auto setDriverType(D3D_DRIVER_TYPE dType)->void;
+
+	//Mesh Color: Getters and Setters
+	auto getMeshColor()->DirectX::XMFLOAT4;
+	auto setMeshColor(DirectX::XMFLOAT4 meshColor)->void;
+
+	//Geometry: Setter
+	auto setGeometry(SimpleVertex* v, unsigned int vSize, WORD* i, unsigned int iSize)->void;
 
 	template < typename Func >
 	auto render(Func func) -> void
@@ -83,10 +124,12 @@ public:
 		g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pCBNeverChanges);
 		g_pImmediateContext->VSSetConstantBuffers(1, 1, &g_pCBChangeOnResize);
 		g_pImmediateContext->VSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);
+
 		g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
 		g_pImmediateContext->PSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 		g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
+
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
 
 		// Present our back buffer to our front buffer
