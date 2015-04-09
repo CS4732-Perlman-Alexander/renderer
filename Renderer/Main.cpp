@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------------
 // Structures
 //-----------------------------------------------------------------------------------
+enum struct lightSourceType	{UNASSIGNED = 0, POINT = 1, DIRECTIONAL = 2, SPOTLIGHT = 3, AREA = 4};
 enum struct materialType	{UNASSIGNED = 0, OBJ = 1};
 struct meshMaterial
 {
@@ -21,7 +22,7 @@ struct meshMaterial
 	float					objShininess;
 	float					objTransparency;
 };
-enum struct nodeType		{UNASSIGNED = 0, TRANSFORMATION = 1, MESH = 2};
+enum struct nodeType		{UNASSIGNED = 0, TRANSFORMATION = 1, MESH = 2, LIGHT = 3};
 struct nodeMeshData
 {
 	SimpleVertex*			vertices	= nullptr;			//array
@@ -35,7 +36,6 @@ struct node
 	DirectX::XMMATRIX*		transform	= nullptr;
 	nodeMeshData*			meshData	= nullptr;
 };
-
 //-----------------------------------------------------------------------------------
 // Global Variables
 //-----------------------------------------------------------------------------------
