@@ -7,6 +7,7 @@
 #include <directxcolors.h>
 #include "DDSTextureLoader.h"
 #include "RndrrStructures.hpp"
+#include "Node.hpp";
 
 class Rndrr
 {
@@ -45,20 +46,22 @@ private:
 	WORD* indices;
 	unsigned int indicesSize;
 
+	// rather than above 4 variables have a scenegraph
+	std::unique_ptr<Node>		scenegraph;
 
 public:
+	// and a traverse/bufferstuff/render function(s) here
 	Rndrr();
 	Rndrr(SimpleVertex* v, unsigned int vSize, WORD* i, unsigned int iSize);
 	~Rndrr();
 
+	//setscenepgraph
+	void setGraphRoot(Node* n);
+
 	auto setupViewport(long width, long height) -> void;
-
 	auto createInputLayout(ID3DBlob*& pVSBlob)->HRESULT;
-
 	auto InitWindow(WNDPROC WndProc, int nCmdShow)->HRESULT;
-
 	auto compileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)->HRESULT;
-
 	auto createDepthStencilTextureAndView(long width, long height)->HRESULT;
 
 	auto initTexture()->HRESULT;
@@ -66,39 +69,29 @@ public:
 	auto initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob)->HRESULT;
 
 	auto initMatrices(long width, long height) -> void;
-
 	auto initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices)->HRESULT;
-
 	auto CleanupDevice() -> void;
-
 	auto initDevice(long width, long height)->HRESULT;
-
 	auto initialize()->HRESULT;
 
 	//Immediate Context: Getters and Setters
 	auto getImmediateContext()->ID3D11DeviceContext*;
 	auto setImmediateContext(ID3D11DeviceContext* iContext)->void;
-
 	//World: Getters and Setters
 	auto getWorld()->DirectX::XMMATRIX;
 	auto setWorld(const DirectX::XMMATRIX& wMatrix)->void;
-
 	//View: Getters and Setters
 	auto getView()->DirectX::XMMATRIX;
 	auto setView(const DirectX::XMMATRIX& vMatrix)->void;
-
 	//Projection: Getters and Setters
 	auto getProjection()->DirectX::XMMATRIX;
 	auto setProjection(const DirectX::XMMATRIX& pMatrix)->void;
-
 	//Driver Type: Getters and Setters
 	auto getDriverType()->D3D_DRIVER_TYPE;
 	auto setDriverType(D3D_DRIVER_TYPE dType)->void;
-
 	//Mesh Color: Getters and Setters
 	auto getMeshColor()->DirectX::XMFLOAT4;
 	auto setMeshColor(DirectX::XMFLOAT4 meshColor)->void;
-
 	//Geometry: Setter
 	auto setGeometry(SimpleVertex* v, unsigned int vSize, WORD* i, unsigned int iSize)->void;
 

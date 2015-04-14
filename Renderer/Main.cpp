@@ -2,47 +2,23 @@
 // File: Renderer.cpp
 //-----------------------------------------------------------------------------------
 #include "Rndrr.hpp"
+#include "Node.hpp"
+#include "nodeLight.hpp"
+#include "nodeMesh.hpp"
+#include "nodeTransform.hpp"
 #include <windows.h>
 #include <vector>
 #include <string>
 //-----------------------------------------------------------------------------------
 // Structures
 //-----------------------------------------------------------------------------------
-enum struct lightSourceType	{UNASSIGNED = 0, POINT = 1, DIRECTIONAL = 2, SPOTLIGHT = 3, AREA = 4};
-enum struct materialType	{UNASSIGNED = 0, OBJ = 1};
-struct meshMaterial
-{
-	materialType			type			= materialType::UNASSIGNED;
-	std::string*			objMaterialName	= nullptr;
-	std::string*			objTextureName	= nullptr;
-	DirectX::XMVECTOR*		objAmbient		= nullptr;
-	DirectX::XMVECTOR*		objDiffuse		= nullptr;
-	DirectX::XMVECTOR*		objSpecular		= nullptr;
-	int						objIllumination;
-	float					objShininess;
-	float					objTransparency;
-};
-enum struct nodeType		{UNASSIGNED = 0, TRANSFORMATION = 1, MESH = 2, LIGHT = 3};
-struct nodeMeshData
-{
-	SimpleVertex*			vertices	= nullptr;			//array
-	WORD*					indices		= nullptr;			//array
-};
-struct node
-{
-	nodeType				type = nodeType::UNASSIGNED;
-	std::vector<node*>		parents;
-	std::vector<node*>		children;
-	DirectX::XMMATRIX*		transform	= nullptr;
-	nodeMeshData*			meshData	= nullptr;
-};
 //-----------------------------------------------------------------------------------
 // Global Variables
 //-----------------------------------------------------------------------------------
 std::unique_ptr<Rndrr> renderer;
-std::unique_ptr<node> scenegraph;
 using DirectX::XMFLOAT2;
 using DirectX::XMFLOAT3;
+
 SimpleVertex vertices[] =
 {
 	{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
@@ -95,6 +71,7 @@ WORD indices[] =
 	22, 20, 21,
 	23, 20, 22
 };
+
 //-----------------------------------------------------------------------------------
 // Forward declarations
 //-----------------------------------------------------------------------------------
@@ -108,6 +85,15 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
+
+	nodeMesh* mNode0 = new nodeMesh(vertices, indices, "seafloor.dds");
+	renderer->setGraphRoot(mNode0);
+	/*
+	DirectX::XMMATRIX t0 = DirectX::XMMatrixRotationX(0.5f);
+	nodeTransform* tNode0 = new nodeTransform(&t0);
+	tNode0->addChild(mNode0);
+	scenegraph->addChild(tNode0);
+	*/
 
 	renderer = std::make_unique<Rndrr>(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices));
 

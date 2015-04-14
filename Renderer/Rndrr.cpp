@@ -46,6 +46,11 @@ Rndrr::~Rndrr()
 {
 }
 
+void Rndrr::setGraphRoot(Node* n)
+{
+	scenegraph.reset(n);
+};
+
 auto Rndrr::setupViewport(long width, long height) -> void
 {
 	D3D11_VIEWPORT vp;
