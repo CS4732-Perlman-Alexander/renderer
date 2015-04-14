@@ -87,7 +87,10 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 	nodeMesh* mNode0 = new nodeMesh(vertices, indices, "seafloor.dds");
-	renderer->setGraphRoot(mNode0);
+	
+	//THIS BE BROKEN
+	//renderer->setGraphRoot(mNode0);
+	
 	/*
 	DirectX::XMMATRIX t0 = DirectX::XMMatrixRotationX(0.5f);
 	nodeTransform* tNode0 = new nodeTransform(&t0);

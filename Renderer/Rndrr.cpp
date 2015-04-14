@@ -285,14 +285,14 @@ auto Rndrr::initMatrices(long width, long height) -> void
 	g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize, 0, nullptr, &cbChangesOnResize, 0, 0);
 }
 
-auto Rndrr::initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices)->HRESULT
+auto Rndrr::initBuffers()->HRESULT
 {
 	auto hr = S_OK;
 	// Create vertex buffer
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * numVertices;
+	bd.ByteWidth = sizeof(SimpleVertex) * verticesSize;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA InitData;
@@ -309,7 +309,7 @@ auto Rndrr::initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD 
 	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * numIndices;
+	bd.ByteWidth = sizeof(WORD) * indicesSize;
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	InitData.pSysMem = indices;
@@ -560,7 +560,7 @@ auto Rndrr::initialize() ->HRESULT
 	// Set the input layout
 	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
 
-	hr = Rndrr::initBuffers(vertices, verticesSize, indices, indicesSize);
+	hr = Rndrr::initBuffers();
 
 	if (FAILED(hr))
 	{

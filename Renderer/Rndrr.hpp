@@ -69,7 +69,7 @@ public:
 	auto initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob)->HRESULT;
 
 	auto initMatrices(long width, long height) -> void;
-	auto initBuffers(SimpleVertex vertices[], unsigned int numVertices, WORD indices[], unsigned int numIndices)->HRESULT;
+	auto initBuffers()->HRESULT;
 	auto CleanupDevice() -> void;
 	auto initDevice(long width, long height)->HRESULT;
 	auto initialize()->HRESULT;
