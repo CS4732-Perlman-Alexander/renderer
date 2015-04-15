@@ -77,6 +77,13 @@ WORD indices[] =
 //-----------------------------------------------------------------------------------
 auto CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM) -> LRESULT;
 auto renderFunction() -> void;
+
+auto testfunc(Node* a) ->void
+{
+	Node* nyan = nullptr;
+	nyan = a;
+}
+
 //-----------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
 // loop. Idle time is used to render the scene.
@@ -85,33 +92,33 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
-
-	nodeMesh* mNode0 = new nodeMesh(vertices, indices, "seafloor.dds");
 	
-	//THIS BE BROKEN
-	//renderer->setGraphRoot(mNode0);
+	auto hr = S_OK;
+
+	// Initialize the unique pointer for the renderer.
+	renderer = std::make_unique<Rndrr>();
 	
-	/*
-	DirectX::XMMATRIX t0 = DirectX::XMMatrixRotationX(0.5f);
-	nodeTransform* tNode0 = new nodeTransform(&t0);
-	tNode0->addChild(mNode0);
-	scenegraph->addChild(tNode0);
-	*/
-
-	renderer = std::make_unique<Rndrr>(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices));
-
-	if(FAILED(renderer->InitWindow(WndProc, nCmdShow)))
+	// Initialize window.
+	hr = renderer->InitWindow(WndProc, nCmdShow);
+	if(FAILED(hr))
 	{
-		return 0;
+		return hr;
 	}
 
-	//renderer->setGeometry(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices));
-
-	if(FAILED(renderer->initialize()))
+	// Other DirectX initialization.
+	hr = renderer->initialize();
+	if(FAILED(hr))
 	{
 		renderer->CleanupDevice();
-		return 0;
+		return hr;
 	}
+
+	// Initialize a unique pointer for a node mesh.
+	auto mNode0 = std::make_unique<nodeMesh>(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices), L"seafloor.dds");
+	
+	// Set the scenegraph and corresponding buffers.
+	renderer->setGraphRoot(std::move(mNode0));
+
 	// Main message loop
 	MSG msg = {0};
 	while(WM_QUIT != msg.message)
@@ -126,7 +133,10 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			renderer->render(renderFunction);
 		}
 	}
+	
+	// Clean up renderer device.
 	renderer->CleanupDevice();
+
 	return static_cast<int>(msg.wParam);
 }
 
@@ -173,12 +183,13 @@ auto renderFunction() -> void
 	}
 
 	// Rotate cube around the origin
+	/*
 	renderer->setWorld(
 		DirectX::XMMatrixRotationX(t) + 
 		DirectX::XMMatrixRotationY(t) + 
 		DirectX::XMMatrixRotationZ(t)
 		);
-
+	*/
 	// Modify the color
 	renderer->setMeshColor(DirectX::XMFLOAT4(
 		((sinf(t * 1.0f) + 1.0f) * 0.5f),

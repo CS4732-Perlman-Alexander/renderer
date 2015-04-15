@@ -8,6 +8,7 @@
 #include "DDSTextureLoader.h"
 #include "RndrrStructures.hpp"
 #include "Node.hpp";
+#include "nodeMesh.hpp";
 
 class Rndrr
 {
@@ -40,39 +41,36 @@ private:
 	DirectX::XMFLOAT4			g_vMeshColor;
 	D3D_FEATURE_LEVEL			g_featureLevel;
 
-
-	SimpleVertex* vertices;
-	unsigned int verticesSize;
-	WORD* indices;
-	unsigned int indicesSize;
-
 	// rather than above 4 variables have a scenegraph
-	std::unique_ptr<Node>		scenegraph;
+	std::unique_ptr<Node> 		scenegraph;
+
+	unsigned int				width;
+	unsigned int				height;
 
 public:
 	// and a traverse/bufferstuff/render function(s) here
 	Rndrr();
-	Rndrr(SimpleVertex* v, unsigned int vSize, WORD* i, unsigned int iSize);
-	~Rndrr();
+	~Rndrr() = default;
 
 	//setscenepgraph
-	void setGraphRoot(Node* n);
+	auto setGraphRoot(std::unique_ptr<Node> n) -> void;
 
-	auto setupViewport(long width, long height) -> void;
+	auto setupViewport() -> void;
 	auto createInputLayout(ID3DBlob*& pVSBlob)->HRESULT;
 	auto InitWindow(WNDPROC WndProc, int nCmdShow)->HRESULT;
 	auto compileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)->HRESULT;
-	auto createDepthStencilTextureAndView(long width, long height)->HRESULT;
+	auto createDepthStencilTextureAndView()->HRESULT;
 
 	auto initTexture()->HRESULT;
 
 	auto initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob)->HRESULT;
 
-	auto initMatrices(long width, long height) -> void;
+	auto initMatrices() -> void;
 	auto initBuffers()->HRESULT;
 	auto CleanupDevice() -> void;
-	auto initDevice(long width, long height)->HRESULT;
+	auto initDevice()->HRESULT;
 	auto initialize()->HRESULT;
+	auto prerenderSetup()->HRESULT;
 
 	//Immediate Context: Getters and Setters
 	auto getImmediateContext()->ID3D11DeviceContext*;
@@ -92,8 +90,6 @@ public:
 	//Mesh Color: Getters and Setters
 	auto getMeshColor()->DirectX::XMFLOAT4;
 	auto setMeshColor(DirectX::XMFLOAT4 meshColor)->void;
-	//Geometry: Setter
-	auto setGeometry(SimpleVertex* v, unsigned int vSize, WORD* i, unsigned int iSize)->void;
 
 	template < typename Func >
 	auto render(Func func) -> void

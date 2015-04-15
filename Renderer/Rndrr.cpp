@@ -2,11 +2,6 @@
 #include <iostream>
 Rndrr::Rndrr()
 {
-	Rndrr(nullptr, 0, nullptr, 0);
-}
-
-Rndrr::Rndrr(SimpleVertex* v, unsigned int vSize, WORD* i, unsigned int iSize)
-{
 	g_hInst = std::make_unique<HINSTANCE>();
 	g_hWnd = std::make_unique<HWND>();
 	g_driverType = D3D_DRIVER_TYPE_NULL;
@@ -31,27 +26,15 @@ Rndrr::Rndrr(SimpleVertex* v, unsigned int vSize, WORD* i, unsigned int iSize)
 	g_vMeshColor = DirectX::XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
 	g_pSamplerLinear = nullptr;
 	g_featureLevel = D3D_FEATURE_LEVEL_11_0;
-
-	vertices = nullptr;
-	verticesSize = 0;
-	indices = nullptr;
-	indicesSize = 0;
-	if (v != nullptr && i != nullptr)
-	{
-		setGeometry(v, vSize, i, iSize);
-	}
 }
 
-Rndrr::~Rndrr()
+auto Rndrr::setGraphRoot(std::unique_ptr<Node> n) -> void
 {
-}
-
-void Rndrr::setGraphRoot(Node* n)
-{
-	scenegraph.reset(n);
+	scenegraph = std::move(n);
+	prerenderSetup();
 };
 
-auto Rndrr::setupViewport(long width, long height) -> void
+auto Rndrr::setupViewport() -> void
 {
 	D3D11_VIEWPORT vp;
 	vp.Width = static_cast<FLOAT>(width);
@@ -62,7 +45,6 @@ auto Rndrr::setupViewport(long width, long height) -> void
 	vp.TopLeftY = 0;
 	g_pImmediateContext->RSSetViewports(1, &vp);
 }
-
 
 auto Rndrr::InitWindow(WNDPROC WndProc, int nCmdShow) -> HRESULT
 {
@@ -158,7 +140,7 @@ auto Rndrr::compileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR
 	return S_OK;
 }
 
-auto Rndrr::createDepthStencilTextureAndView(long width, long height)->HRESULT
+auto Rndrr::createDepthStencilTextureAndView()->HRESULT
 {
 	auto hr = S_OK;
 
@@ -260,7 +242,7 @@ auto Rndrr::initShaders(ID3DBlob*& pVSBlob, ID3DBlob*& pPSBlob)->HRESULT
 	return hr;
 }
 
-auto Rndrr::initMatrices(long width, long height) -> void
+auto Rndrr::initMatrices() -> void
 {
 	using namespace DirectX;
 
@@ -287,17 +269,20 @@ auto Rndrr::initMatrices(long width, long height) -> void
 
 auto Rndrr::initBuffers()->HRESULT
 {
+	auto nodemesh = static_cast<nodeMesh*>(scenegraph.get());
+
 	auto hr = S_OK;
 	// Create vertex buffer
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * verticesSize;
+	bd.ByteWidth = sizeof(SimpleVertex)* nodemesh->getNumVertices();
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
-	InitData.pSysMem = vertices;
+	//InitData.pSysMem = vertices;
+	InitData.pSysMem = nodemesh->getVertices();
 	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
 	if (FAILED(hr))
 	{
@@ -309,10 +294,11 @@ auto Rndrr::initBuffers()->HRESULT
 	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * indicesSize;
+	bd.ByteWidth = sizeof(WORD) * nodemesh->getNumIndices();
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
-	InitData.pSysMem = indices;
+	//InitData.pSysMem = indices;
+	InitData.pSysMem = nodemesh->getIndices();
 	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
 	if (FAILED(hr))
 	{
@@ -345,7 +331,7 @@ auto Rndrr::initBuffers()->HRESULT
 	return hr;
 }
 
-auto Rndrr::initDevice(long width, long height)->HRESULT
+auto Rndrr::initDevice()->HRESULT
 {
 	auto hr = S_OK;
 	auto createDeviceFlags = 0;
@@ -517,18 +503,18 @@ auto Rndrr::initialize() ->HRESULT
 {
 	RECT rc;
 	GetClientRect(*g_hWnd.get(), &rc);
-	auto width = rc.right - rc.left;
-	auto height = rc.bottom - rc.top;
+	width = rc.right - rc.left;
+	height = rc.bottom - rc.top;
 
 	// Initialize devices.
-	auto hr = Rndrr::initDevice(width, height);
+	auto hr = Rndrr::initDevice();
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
 	// Depth stencil texture and view.
-	hr = Rndrr::createDepthStencilTextureAndView(width, height);
+	hr = Rndrr::createDepthStencilTextureAndView();
 	if (FAILED(hr))
 	{
 		return hr;
@@ -537,7 +523,7 @@ auto Rndrr::initialize() ->HRESULT
 	g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
 
 	// Setup the viewport
-	Rndrr::setupViewport(width, height);
+	Rndrr::setupViewport();
 
 	// Initialize the shaders.
 	ID3DBlob* pVSBlob = nullptr;
@@ -560,6 +546,15 @@ auto Rndrr::initialize() ->HRESULT
 	// Set the input layout
 	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
 
+	return hr;
+}
+
+auto Rndrr::prerenderSetup() -> HRESULT
+{
+	auto hr = S_OK;
+
+	// get scenegraph vertices, indices, textures
+
 	hr = Rndrr::initBuffers();
 
 	if (FAILED(hr))
@@ -576,11 +571,10 @@ auto Rndrr::initialize() ->HRESULT
 		return hr;
 	}
 
-	Rndrr::initMatrices(width, height);
-	
+	Rndrr::initMatrices();
+
 	return S_OK;
 }
-
 
 //Immediate Context: Getters and Setters
 auto Rndrr::getImmediateContext()->ID3D11DeviceContext*
@@ -640,13 +634,4 @@ auto Rndrr::getMeshColor()->DirectX::XMFLOAT4
 auto Rndrr::setMeshColor(DirectX::XMFLOAT4 meshColor)->void
 {
 	this->g_vMeshColor = meshColor;
-};
-
-//Geometry: Setter
-auto Rndrr::setGeometry(SimpleVertex* v, unsigned int vSize, WORD* i, unsigned int iSize)->void
-{
-	this->vertices = v;
-	this->verticesSize = vSize;
-	this->indices = i;
-	this->indicesSize = iSize;
 };
