@@ -1,21 +1,26 @@
 #include "Node.hpp"
 
-Node::Node()
+Node::Node(std::shared_ptr<Node> p, std::vector<std::shared_ptr<Node>> c) : parent(p), children(c)
 {
+	//this->parent = p;
+	//this->children = c;
 };
 
-Node::Node(Node* p, std::vector<Node*> c)
+Node::Node(Node&& n)
 {
-	this->parent = p;
-	this->children = c;
-};
-
-void Node::addChild(Node* c)
-{
-	c->parent = this;
-	this->children.push_back(c);
+	this->setChildren(std::move(n.getChildren()));
+	this->setParent(std::move(n.getParent()));
 }
 
-Node::~Node()
+Node& Node::operator=(Node&& n)
 {
-};
+	this->setChildren(std::move(n.getChildren()));
+	this->setParent(std::move(n.getParent()));
+	return *this;
+}
+
+auto Node::addChild(std::shared_ptr<Node> c) -> void
+{
+	c.get()->setParent(std::make_shared<Node>(*this));
+	this->children.emplace_back(c);
+}

@@ -51,6 +51,40 @@ SimpleVertex vertices[] =
 	{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
 	{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
 };
+
+SimpleVertex vertices2[] =
+{
+	{ XMFLOAT3(-1.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+	{ XMFLOAT3(1.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+	{ XMFLOAT3(1.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(-1.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
+
+	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+	{ XMFLOAT3(1.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(-1.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
+
+	{ XMFLOAT3(-1.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(-1.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+	{ XMFLOAT3(-1.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 0.0f) },
+
+	{ XMFLOAT3(1.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(1.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+	{ XMFLOAT3(1.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 0.0f) },
+
+	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(1.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+	{ XMFLOAT3(-1.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+
+	{ XMFLOAT3(-1.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(1.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(1.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 0.0f) },
+	{ XMFLOAT3(-1.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 0.0f) },
+};
+
 WORD indices[] =
 {
 	3, 1, 0,
@@ -115,6 +149,9 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	// Initialize a unique pointer for a node mesh.
 	auto mNode0 = std::make_unique<nodeMesh>(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices), L"seafloor.dds");
+	auto mNode1 = std::make_unique<nodeMesh>(vertices2, ARRAYSIZE(vertices2), indices, ARRAYSIZE(indices), L"seafloor.dds");
+
+	mNode0.get()->addChild(std::move(mNode1));
 	
 	// Set the scenegraph and corresponding buffers.
 	renderer->setGraphRoot(std::move(mNode0));

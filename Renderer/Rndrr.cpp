@@ -269,41 +269,77 @@ auto Rndrr::initMatrices() -> void
 
 auto Rndrr::initBuffers()->HRESULT
 {
-	auto nodemesh = static_cast<nodeMesh*>(scenegraph.get());
-
 	auto hr = S_OK;
+	auto nodemesh0 = static_cast<nodeMesh*>(scenegraph.get());
+	auto nodemesh1 = static_cast<nodeMesh*>(nodemesh0->getChildren().at(0).get());
+
+	std::vector<nodeMesh*> nodemeshes{ nodemesh0, nodemesh1 };
+	
 	// Create vertex buffer
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex)* nodemesh->getNumVertices();
+	bd.ByteWidth = sizeof(SimpleVertex)* nodemesh0->getNumVertices();// +nodemesh1->getNumVertices());
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
 	//InitData.pSysMem = vertices;
-	InitData.pSysMem = nodemesh->getVertices();
+	InitData.pSysMem = nodemesh0->getVertices();
 	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
+
+	D3D11_BUFFER_DESC bd2;
+	ZeroMemory(&bd2, sizeof(bd2));
+	bd2.Usage = D3D11_USAGE_DEFAULT;
+	bd2.ByteWidth = sizeof(SimpleVertex)* nodemesh1->getNumVertices();// +nodemesh1->getNumVertices());
+	bd2.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd2.CPUAccessFlags = 0;
+	ID3D11Buffer* g_pVertexBuffer2 = nullptr;
+	D3D11_SUBRESOURCE_DATA InitData2;
+	ZeroMemory(&InitData, sizeof(InitData));
+	InitData2.pSysMem = nodemesh1->getVertices();
+	hr = g_pd3dDevice->CreateBuffer(&bd2, &InitData2, &g_pVertexBuffer2);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	ID3D11Buffer* vertexBuffers[] =
+	{
+		g_pVertexBuffer, g_pVertexBuffer2
+	};
+
+	unsigned int strides[] =
+	{
+		sizeof(SimpleVertex), sizeof(SimpleVertex)
+	};
+
+	UINT offsets[] =
+	{
+		0, 0
+	};
+
 	// Set vertex buffer
 	auto stride = sizeof(SimpleVertex);
 	UINT offset = 0;
-	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
+	g_pImmediateContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * nodemesh->getNumIndices();
+	bd.ByteWidth = sizeof(WORD) * nodemesh0->getNumIndices();
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	//InitData.pSysMem = indices;
-	InitData.pSysMem = nodemesh->getIndices();
+	InitData.pSysMem = nodemesh0->getIndices();
 	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
 	if (FAILED(hr))
 	{
 		return hr;
 	}
+
 	// Set index buffer
 	g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
