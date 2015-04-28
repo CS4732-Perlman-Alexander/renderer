@@ -50,10 +50,7 @@ SimpleVertex vertices[] =
 	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
 	{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
 	{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-};
-
-SimpleVertex vertices2[] =
-{
+	
 	{ XMFLOAT3(-1.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
 	{ XMFLOAT3(1.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
 	{ XMFLOAT3(1.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
@@ -83,6 +80,7 @@ SimpleVertex vertices2[] =
 	{ XMFLOAT3(1.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
 	{ XMFLOAT3(1.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 0.0f) },
 	{ XMFLOAT3(-1.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 0.0f) },
+	
 };
 
 WORD indices[] =
@@ -161,9 +159,9 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	// Initialize a unique pointer for a node mesh.
 	auto mNode0 = std::make_shared<nodeMesh>(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices), L"seafloor.dds");
-	auto mNode1 = std::make_shared<nodeMesh>(vertices2, ARRAYSIZE(vertices2), indices, ARRAYSIZE(indices), L"seafloor.dds");
+	//auto mNode1 = std::make_shared<nodeMesh>(vertices2, ARRAYSIZE(vertices2), indices, ARRAYSIZE(indices), L"seafloor.dds");
 
-	mNode0.get()->addChild(mNode1, mNode0);
+	//mNode0.get()->addChild(mNode1, mNode0);
 	
 	// Set the scenegraph and corresponding buffers.
 	renderer->setGraphRoot(std::move(mNode0));

@@ -271,7 +271,7 @@ auto Rndrr::initBuffers()->HRESULT
 {
 	auto hr = S_OK;
 	auto nodemesh0 = static_cast<nodeMesh*>(scenegraph.get());
-	auto nodemesh1 = static_cast<nodeMesh*>(nodemesh0->getChildren().at(0).get());
+	//auto nodemesh1 = static_cast<nodeMesh*>(nodemesh0->getChildren().at(0).get());
 
 	//std::vector<nodeMesh*> nodemeshes{ nodemesh0, nodemesh1 };
 	
@@ -292,6 +292,7 @@ auto Rndrr::initBuffers()->HRESULT
 		return hr;
 	}
 
+	/*
 	D3D11_BUFFER_DESC bd2;
 	ZeroMemory(&bd2, sizeof(bd2));
 	bd2.Usage = D3D11_USAGE_DEFAULT;
@@ -307,10 +308,10 @@ auto Rndrr::initBuffers()->HRESULT
 	{
 		return hr;
 	}
-
-	ID3D11Buffer* vertexBuffers[2];
-	vertexBuffers[0] = g_pVertexBuffer;
-	vertexBuffers[1] = g_pVertexBuffer2;
+	*/
+	//ID3D11Buffer* vertexBuffers[2];
+	//vertexBuffers[0] = g_pVertexBuffer;
+	//vertexBuffers[1] = g_pVertexBuffer2;
 //	{
 //		g_pVertexBuffer, g_pVertexBuffer2
 //	};
@@ -326,9 +327,9 @@ auto Rndrr::initBuffers()->HRESULT
 	};
 
 	// Set vertex buffer
-	//auto stride = sizeof(SimpleVertex);
-	//UINT offset = 0;
-	g_pImmediateContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
+	auto stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(WORD) * nodemesh0->getNumIndices();

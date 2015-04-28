@@ -118,8 +118,10 @@ public:
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 		g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
 
+		// First 36 vertices
 		g_pImmediateContext->DrawIndexed(36, 0, 0);
-		g_pImmediateContext->DrawIndexed(36, 36, 24);
+		// Next 36 vertices
+		g_pImmediateContext->DrawIndexed(36, 36, 0);
 
 		// Present our back buffer to our front buffer
 		g_pSwapChain->Present(0, 0);
