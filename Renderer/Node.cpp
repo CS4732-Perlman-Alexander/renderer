@@ -19,8 +19,8 @@ Node& Node::operator=(Node&& n)
 	return *this;
 }
 
-auto Node::addChild(std::shared_ptr<Node> c) -> void
+auto Node::addChild(std::shared_ptr<Node> c, std::shared_ptr<Node> p) -> void
 {
-	c.get()->setParent(std::make_shared<Node>(*this));
+	c.get()->setParent(p);
 	this->children.emplace_back(c);
 }

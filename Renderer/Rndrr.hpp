@@ -41,8 +41,7 @@ private:
 	DirectX::XMFLOAT4			g_vMeshColor;
 	D3D_FEATURE_LEVEL			g_featureLevel;
 
-	// rather than above 4 variables have a scenegraph
-	std::unique_ptr<Node> 		scenegraph;
+	std::shared_ptr<Node> 		scenegraph;
 
 	unsigned int				width;
 	unsigned int				height;
@@ -53,7 +52,7 @@ public:
 	~Rndrr() = default;
 
 	//setscenepgraph
-	auto setGraphRoot(std::unique_ptr<Node> n) -> void;
+	auto setGraphRoot(std::shared_ptr<Node> n) -> void;
 
 	auto setupViewport() -> void;
 	auto createInputLayout(ID3DBlob*& pVSBlob)->HRESULT;
@@ -119,7 +118,8 @@ public:
 		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
 		g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
 
-		g_pImmediateContext->DrawIndexed(72, 0, 0);
+		g_pImmediateContext->DrawIndexed(36, 0, 0);
+		g_pImmediateContext->DrawIndexed(36, 36, 24);
 
 		// Present our back buffer to our front buffer
 		g_pSwapChain->Present(0, 0);

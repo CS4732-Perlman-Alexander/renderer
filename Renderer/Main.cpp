@@ -103,7 +103,25 @@ WORD indices[] =
 	18, 17, 19,
 
 	22, 20, 21,
-	23, 20, 22
+	23, 20, 22,
+
+	27, 25, 24,
+	26, 25, 27,
+
+	30, 28, 29,
+	31, 28, 30,
+
+	35, 33, 32,
+	34, 33, 35,
+
+	38, 36, 37,
+	39, 36, 38,
+
+	43, 41, 40,
+	42, 41, 43,
+
+	46, 44, 45,
+	47, 44, 46
 };
 
 //-----------------------------------------------------------------------------------
@@ -111,12 +129,6 @@ WORD indices[] =
 //-----------------------------------------------------------------------------------
 auto CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM) -> LRESULT;
 auto renderFunction() -> void;
-
-auto testfunc(Node* a) ->void
-{
-	Node* nyan = nullptr;
-	nyan = a;
-}
 
 //-----------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -148,10 +160,10 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	}
 
 	// Initialize a unique pointer for a node mesh.
-	auto mNode0 = std::make_unique<nodeMesh>(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices), L"seafloor.dds");
-	auto mNode1 = std::make_unique<nodeMesh>(vertices2, ARRAYSIZE(vertices2), indices, ARRAYSIZE(indices), L"seafloor.dds");
+	auto mNode0 = std::make_shared<nodeMesh>(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices), L"seafloor.dds");
+	auto mNode1 = std::make_shared<nodeMesh>(vertices2, ARRAYSIZE(vertices2), indices, ARRAYSIZE(indices), L"seafloor.dds");
 
-	mNode0.get()->addChild(std::move(mNode1));
+	mNode0.get()->addChild(mNode1, mNode0);
 	
 	// Set the scenegraph and corresponding buffers.
 	renderer->setGraphRoot(std::move(mNode0));

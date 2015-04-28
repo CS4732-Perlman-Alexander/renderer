@@ -1,5 +1,5 @@
 #include "Rndrr.hpp"
-#include <iostream>
+
 Rndrr::Rndrr()
 {
 	g_hInst = std::make_unique<HINSTANCE>();
@@ -28,7 +28,7 @@ Rndrr::Rndrr()
 	g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 }
 
-auto Rndrr::setGraphRoot(std::unique_ptr<Node> n) -> void
+auto Rndrr::setGraphRoot(std::shared_ptr<Node> n) -> void
 {
 	scenegraph = std::move(n);
 	prerenderSetup();
@@ -273,13 +273,13 @@ auto Rndrr::initBuffers()->HRESULT
 	auto nodemesh0 = static_cast<nodeMesh*>(scenegraph.get());
 	auto nodemesh1 = static_cast<nodeMesh*>(nodemesh0->getChildren().at(0).get());
 
-	std::vector<nodeMesh*> nodemeshes{ nodemesh0, nodemesh1 };
+	//std::vector<nodeMesh*> nodemeshes{ nodemesh0, nodemesh1 };
 	
 	// Create vertex buffer
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex)* nodemesh0->getNumVertices();// +nodemesh1->getNumVertices());
+	bd.ByteWidth = sizeof(SimpleVertex) * nodemesh0->getNumVertices();
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA InitData;
@@ -295,12 +295,12 @@ auto Rndrr::initBuffers()->HRESULT
 	D3D11_BUFFER_DESC bd2;
 	ZeroMemory(&bd2, sizeof(bd2));
 	bd2.Usage = D3D11_USAGE_DEFAULT;
-	bd2.ByteWidth = sizeof(SimpleVertex)* nodemesh1->getNumVertices();// +nodemesh1->getNumVertices());
+	bd2.ByteWidth = sizeof(SimpleVertex) * nodemesh1->getNumVertices();
 	bd2.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd2.CPUAccessFlags = 0;
 	ID3D11Buffer* g_pVertexBuffer2 = nullptr;
 	D3D11_SUBRESOURCE_DATA InitData2;
-	ZeroMemory(&InitData, sizeof(InitData));
+	ZeroMemory(&InitData2, sizeof(InitData2));
 	InitData2.pSysMem = nodemesh1->getVertices();
 	hr = g_pd3dDevice->CreateBuffer(&bd2, &InitData2, &g_pVertexBuffer2);
 	if (FAILED(hr))
@@ -308,10 +308,12 @@ auto Rndrr::initBuffers()->HRESULT
 		return hr;
 	}
 
-	ID3D11Buffer* vertexBuffers[] =
-	{
-		g_pVertexBuffer, g_pVertexBuffer2
-	};
+	ID3D11Buffer* vertexBuffers[2];
+	vertexBuffers[0] = g_pVertexBuffer;
+	vertexBuffers[1] = g_pVertexBuffer2;
+//	{
+//		g_pVertexBuffer, g_pVertexBuffer2
+//	};
 
 	unsigned int strides[] =
 	{
@@ -324,8 +326,8 @@ auto Rndrr::initBuffers()->HRESULT
 	};
 
 	// Set vertex buffer
-	auto stride = sizeof(SimpleVertex);
-	UINT offset = 0;
+	//auto stride = sizeof(SimpleVertex);
+	//UINT offset = 0;
 	g_pImmediateContext->IASetVertexBuffers(0, 2, vertexBuffers, strides, offsets);
 
 	bd.Usage = D3D11_USAGE_DEFAULT;

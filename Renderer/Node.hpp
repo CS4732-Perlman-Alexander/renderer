@@ -21,7 +21,7 @@ public:
 	Node(Node&& n);
 	Node& operator=(Node&&);
 
-	auto addChild(std::shared_ptr<Node> c) -> void;
+	auto addChild(std::shared_ptr<Node> c, std::shared_ptr<Node> p) -> void;
 
 	// Inline functions. They happen to  be getters and setters as well.
 	auto setParent(std::shared_ptr<Node> p) -> void { this->parent = p; };
