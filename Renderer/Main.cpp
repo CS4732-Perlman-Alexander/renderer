@@ -51,35 +51,35 @@ SimpleVertex vertices[] =
 	{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
 	{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
 	
-	{ XMFLOAT3(-1.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(1.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(1.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(-1.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(2.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+	{ XMFLOAT3(5.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+	{ XMFLOAT3(5.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(2.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
 
-	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(1.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(-1.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(2.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+	{ XMFLOAT3(5.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+	{ XMFLOAT3(5.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(2.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
 
-	{ XMFLOAT3(-1.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(-1.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(-1.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 0.0f) },
+	{ XMFLOAT3(2.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(2.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(2.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+	{ XMFLOAT3(2.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 0.0f) },
 
-	{ XMFLOAT3(1.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(1.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 0.0f) },
+	{ XMFLOAT3(5.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(5.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(5.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+	{ XMFLOAT3(5.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 0.0f) },
 
-	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(-1.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
+	{ XMFLOAT3(2.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(5.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(5.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
+	{ XMFLOAT3(2.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
 
-	{ XMFLOAT3(-1.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(-1.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 0.0f) },
+	{ XMFLOAT3(2.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
+	{ XMFLOAT3(5.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
+	{ XMFLOAT3(5.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 0.0f) },
+	{ XMFLOAT3(2.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 0.0f) },
 	
 };
 
@@ -230,17 +230,15 @@ auto renderFunction() -> void
 	}
 
 	// Rotate cube around the origin
-	/*
-	renderer->setWorld(
-		DirectX::XMMatrixRotationX(t) + 
-		DirectX::XMMatrixRotationY(t) + 
-		DirectX::XMMatrixRotationZ(t)
-		);
-	*/
+	
+	renderer->setWorld(DirectX::XMMatrixRotationY(t));
+	
 	// Modify the color
+	/*
 	renderer->setMeshColor(DirectX::XMFLOAT4(
 		((sinf(t * 1.0f) + 1.0f) * 0.5f),
 		((cosf(t * 3.0f) + 1.0f) * 0.5f),
 		((sinf(t * 5.0f) + 1.0f) * 0.5f),
 		1.0f));
+		*/
 }
