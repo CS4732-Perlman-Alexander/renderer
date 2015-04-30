@@ -90,38 +90,33 @@ public:
 	auto getMeshColor()->DirectX::XMFLOAT4;
 	auto setMeshColor(DirectX::XMFLOAT4 meshColor)->void;
 
+	auto drawIndexed(UINT indexCount, UINT startIndexLocation, INT baseVertexLocation) -> void 
+	{ 
+		g_pImmediateContext->DrawIndexed(indexCount, startIndexLocation, baseVertexLocation); 
+	};
+
+	auto updateShaders() -> void;
+	auto updateConstantBuffers() -> void;
+
 	template < typename Func >
 	auto render(Func func) -> void
 	{
-		func();
-
 		// Clear the back buffer
 		g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, DirectX::Colors::Black);
 
 		// Clear the depth buffer to 1.0 (max depth)
 		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
+		func();
+
 		// Update variables that change once per frame
-		CBChangesEveryFrame cb;
-		cb.mWorld = XMMatrixTranspose(g_World);
-		cb.vMeshColor = g_vMeshColor;
-		g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, nullptr, &cb, 0, 0);
-
-		// Render the cube
-		g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
-		g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pCBNeverChanges);
-		g_pImmediateContext->VSSetConstantBuffers(1, 1, &g_pCBChangeOnResize);
-		g_pImmediateContext->VSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);
-
-		g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
-		g_pImmediateContext->PSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);
-		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-		g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
+		//updateConstantBuffers();
+		//updateShaders();
 
 		// First 36 vertices
-		g_pImmediateContext->DrawIndexed(36, 0, 0);
+		//drawIndexed(36, 0, 0);
 		// Next 36 vertices
-		g_pImmediateContext->DrawIndexed(36, 36, 0);
+		//drawIndexed(36, 36, 0);
 
 		// Present our back buffer to our front buffer
 		g_pSwapChain->Present(0, 0);

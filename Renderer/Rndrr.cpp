@@ -250,7 +250,7 @@ auto Rndrr::initMatrices() -> void
 	g_World = XMMatrixIdentity();
 
 	// Initialize the view matrix
-	auto Eye = XMVectorSet(0.0f, 3.0f, -6.0f, 0.0f);
+	auto Eye = XMVectorSet(0.0f, 8.0f, -12.0f, 0.0f);
 	auto At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	auto Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	g_View = XMMatrixLookAtLH(Eye, At, Up);
@@ -674,3 +674,24 @@ auto Rndrr::setMeshColor(DirectX::XMFLOAT4 meshColor)->void
 {
 	this->g_vMeshColor = meshColor;
 };
+
+auto Rndrr::updateShaders() -> void
+{
+	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
+	g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pCBNeverChanges);
+	g_pImmediateContext->VSSetConstantBuffers(1, 1, &g_pCBChangeOnResize);
+	g_pImmediateContext->VSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);
+
+	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
+	g_pImmediateContext->PSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);
+	g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
+	g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
+}
+
+auto Rndrr::updateConstantBuffers() -> void
+{
+	CBChangesEveryFrame cb;
+	cb.mWorld = XMMatrixTranspose(g_World);
+	cb.vMeshColor = g_vMeshColor;
+	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, nullptr, &cb, 0, 0);
+}

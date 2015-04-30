@@ -229,16 +229,21 @@ auto renderFunction() -> void
 		t = ( timeCur - timeStart ) / 1000.0f;
 	}
 
-	// Rotate cube around the origin
-	
-	renderer->setWorld(DirectX::XMMatrixRotationY(t));
-	
-	// Modify the color
-	/*
-	renderer->setMeshColor(DirectX::XMFLOAT4(
-		((sinf(t * 1.0f) + 1.0f) * 0.5f),
-		((cosf(t * 3.0f) + 1.0f) * 0.5f),
-		((sinf(t * 5.0f) + 1.0f) * 0.5f),
-		1.0f));
-		*/
+	// Cube 1 Rotation is 0, color is green.
+	renderer->setWorld(DirectX::XMMatrixRotationZ(2*t));
+	renderer->setMeshColor(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f));
+	// Update cube 1 stuff.
+	renderer->updateConstantBuffers();
+	renderer->updateShaders();
+	// Draw cube 1.
+	renderer->drawIndexed(36, 0, 0);
+
+	// Cube 2 rotation is t, color is red.
+	renderer->setWorld(DirectX::XMMatrixRotationY(4*t));
+	renderer->setMeshColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
+	// Update cube 1 stuff.
+	renderer->updateConstantBuffers();
+	//renderer->updateShaders();
+	// Draw cube 2.
+	renderer->drawIndexed(36, 36, 0);
 }
