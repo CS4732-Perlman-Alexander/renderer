@@ -19,114 +19,18 @@ std::unique_ptr<Rndrr> renderer;
 using DirectX::XMFLOAT2;
 using DirectX::XMFLOAT3;
 
-SimpleVertex vertices[] =
-{
-	{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-
-	{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
-
-	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-
-	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-
-	{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-
-	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-	
-	{ XMFLOAT3(2.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(5.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(5.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(2.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
-
-	{ XMFLOAT3(2.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(5.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(5.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(2.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
-
-	{ XMFLOAT3(2.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(2.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(2.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(2.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 0.0f) },
-
-	{ XMFLOAT3(5.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(5.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(5.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(5.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 0.0f) },
-
-	{ XMFLOAT3(2.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(5.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(5.0f, 2.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
-	{ XMFLOAT3(2.0f, 2.0f, 1.0f), XMFLOAT2(0.0f, 0.0f) },
-
-	{ XMFLOAT3(2.0f, -1.0f, 3.0f), XMFLOAT2(1.0f, 1.0f) },
-	{ XMFLOAT3(5.0f, -1.0f, 3.0f), XMFLOAT2(0.0f, 1.0f) },
-	{ XMFLOAT3(5.0f, 2.0f, 3.0f), XMFLOAT2(0.0f, 0.0f) },
-	{ XMFLOAT3(2.0f, 2.0f, 3.0f), XMFLOAT2(1.0f, 0.0f) },
-	
-};
-
-WORD indices[] =
-{
-	3, 1, 0,
-	2, 1, 3,
-
-	6, 4, 5,
-	7, 4, 6,
-
-	11, 9, 8,
-	10, 9, 11,
-
-	14, 12, 13,
-	15, 12, 14,
-
-	19, 17, 16,
-	18, 17, 19,
-
-	22, 20, 21,
-	23, 20, 22,
-
-	27, 25, 24,
-	26, 25, 27,
-
-	30, 28, 29,
-	31, 28, 30,
-
-	35, 33, 32,
-	34, 33, 35,
-
-	38, 36, 37,
-	39, 36, 38,
-
-	43, 41, 40,
-	42, 41, 43,
-
-	46, 44, 45,
-	47, 44, 46
-};
+const auto numCubes = 3;
+const auto numVertices = numCubes * 24;
+const auto numIndices = numCubes * 36;
+SimpleVertex vertices[numVertices];
+WORD indices[numIndices];
 
 //-----------------------------------------------------------------------------------
 // Forward declarations
 //-----------------------------------------------------------------------------------
 auto CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM) -> LRESULT;
 auto renderFunction() -> void;
+auto generateCubeGeometry() -> void;
 
 //-----------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -157,11 +61,10 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		return hr;
 	}
 
-	// Initialize a unique pointer for a node mesh.
-	auto mNode0 = std::make_shared<nodeMesh>(vertices, ARRAYSIZE(vertices), indices, ARRAYSIZE(indices), L"seafloor.dds");
-	//auto mNode1 = std::make_shared<nodeMesh>(vertices2, ARRAYSIZE(vertices2), indices, ARRAYSIZE(indices), L"seafloor.dds");
+	generateCubeGeometry();
 
-	//mNode0.get()->addChild(mNode1, mNode0);
+	// Initialize a unique pointer for a node mesh.
+	auto mNode0 = std::make_shared<nodeMesh>(vertices, numVertices, indices, numIndices, L"seafloor.dds");
 	
 	// Set the scenegraph and corresponding buffers.
 	renderer->setGraphRoot(std::move(mNode0));
@@ -209,6 +112,83 @@ auto CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) -> 
 	return 0;
 }
 
+auto generateCubeGeometry() -> void
+{
+	// Generate the vertices.
+	std::vector<SimpleVertex> tempVertexVector;
+	for (auto i = 0; i < numCubes; ++i)
+	{
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f)});
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f)});
+
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f)});
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f)});
+
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f)});
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f)});
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f)});
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)});
+
+		tempVertexVector.push_back({XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)});
+
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f)});
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f)});
+
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(1.0f, 1.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f, 1.0f)});
+		tempVertexVector.push_back({XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)});
+		tempVertexVector.push_back({XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)});
+	}
+	// Copy the vertices.
+	for (size_t i = 0; i < tempVertexVector.size(); ++i)
+	{
+		vertices[i] = tempVertexVector.at(i);
+	}
+
+	std::vector<WORD> tempIndexVector;
+	auto currentIndex = 0;
+	// For each cube
+	for (auto i = 0; i < numCubes; ++i)
+	{
+		// For every 2 faces.
+		for (auto j = 0; j < 3; ++j)
+		{
+			tempIndexVector.emplace_back(currentIndex + 3);
+			tempIndexVector.emplace_back(currentIndex + 1);
+			tempIndexVector.emplace_back(currentIndex);
+			tempIndexVector.emplace_back(currentIndex + 2);
+			tempIndexVector.emplace_back(currentIndex + 1);
+			tempIndexVector.emplace_back(currentIndex + 3);
+
+			currentIndex += 3;
+
+			tempIndexVector.emplace_back(currentIndex + 3);
+			tempIndexVector.emplace_back(currentIndex + 1);
+			tempIndexVector.emplace_back(currentIndex + 2);
+			tempIndexVector.emplace_back(currentIndex + 4);
+			tempIndexVector.emplace_back(currentIndex + 1);
+			tempIndexVector.emplace_back(currentIndex + 3);
+
+			currentIndex += 5;
+		}
+	}
+
+	// Copy the indices.
+	for (size_t i = 0; i < tempIndexVector.size(); ++i)
+	{
+		indices[i] = tempIndexVector.at(i);
+	}
+}
+
 //-----------------------------------------------------------------------------------
 // Render a frame
 //-----------------------------------------------------------------------------------
@@ -229,21 +209,28 @@ auto renderFunction() -> void
 		t = ( timeCur - timeStart ) / 1000.0f;
 	}
 
-	// Cube 1 Rotation is 0, color is green.
+	// Cube 1 rotates, color is green.
 	renderer->setWorld(DirectX::XMMatrixRotationZ(2*t));
 	renderer->setMeshColor(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f));
 	// Update cube 1 stuff.
 	renderer->updateConstantBuffers();
 	renderer->updateShaders();
 	// Draw cube 1.
-	renderer->drawIndexed(36, 0, 0);
+	renderer->drawIndexed(numIndices/numCubes, 0, 0);
 
-	// Cube 2 rotation is t, color is red.
-	renderer->setWorld(DirectX::XMMatrixRotationY(4*t));
+	// Cube 2 rotates around cube 1, color is red.
+	renderer->setWorld(DirectX::XMMatrixTranslation(5.0f, 0.0f, 0.0f)*DirectX::XMMatrixRotationY(4 * t));
 	renderer->setMeshColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
-	// Update cube 1 stuff.
+	// Update cube 2 stuff.
 	renderer->updateConstantBuffers();
-	//renderer->updateShaders();
 	// Draw cube 2.
-	renderer->drawIndexed(36, 36, 0);
+	renderer->drawIndexed(numIndices / numCubes, numIndices / numCubes, 0);
+
+	// Cube 3 scales, color is blue.
+	renderer->setWorld(DirectX::XMMatrixScaling(2 * abs(sin(2 * t)), 2 * abs(sin(2 * t)), 2 * abs(sin(2 * t)))*DirectX::XMMatrixTranslation(5.0f, 0.0f, 5.0f));
+	renderer->setMeshColor(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f));
+	// Update cube 3 stuff.
+	renderer->updateConstantBuffers();
+	// Draw cube 3.
+	renderer->drawIndexed(numIndices / numCubes, 2*numIndices / numCubes, 0);
 }

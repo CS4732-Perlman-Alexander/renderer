@@ -7,8 +7,8 @@
 #include <directxcolors.h>
 #include "DDSTextureLoader.h"
 #include "RndrrStructures.hpp"
-#include "Node.hpp";
-#include "nodeMesh.hpp";
+#include "Node.hpp"
+#include "nodeMesh.hpp"
 
 class Rndrr
 {

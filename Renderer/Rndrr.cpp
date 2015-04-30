@@ -292,40 +292,6 @@ auto Rndrr::initBuffers()->HRESULT
 		return hr;
 	}
 
-	/*
-	D3D11_BUFFER_DESC bd2;
-	ZeroMemory(&bd2, sizeof(bd2));
-	bd2.Usage = D3D11_USAGE_DEFAULT;
-	bd2.ByteWidth = sizeof(SimpleVertex) * nodemesh1->getNumVertices();
-	bd2.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd2.CPUAccessFlags = 0;
-	ID3D11Buffer* g_pVertexBuffer2 = nullptr;
-	D3D11_SUBRESOURCE_DATA InitData2;
-	ZeroMemory(&InitData2, sizeof(InitData2));
-	InitData2.pSysMem = nodemesh1->getVertices();
-	hr = g_pd3dDevice->CreateBuffer(&bd2, &InitData2, &g_pVertexBuffer2);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-	*/
-	//ID3D11Buffer* vertexBuffers[2];
-	//vertexBuffers[0] = g_pVertexBuffer;
-	//vertexBuffers[1] = g_pVertexBuffer2;
-//	{
-//		g_pVertexBuffer, g_pVertexBuffer2
-//	};
-
-	unsigned int strides[] =
-	{
-		sizeof(SimpleVertex), sizeof(SimpleVertex)
-	};
-
-	UINT offsets[] =
-	{
-		0, 0
-	};
-
 	// Set vertex buffer
 	auto stride = sizeof(SimpleVertex);
 	UINT offset = 0;
