@@ -1,12 +1,14 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <string>
+
 class Node
 {
 private:
 	std::shared_ptr<Node>					parent;
 	std::vector<std::shared_ptr<Node>>		children;
-
+	std::string								myType;
 public:
 	// Ctors, dtors.
 	Node() = default;
@@ -21,11 +23,14 @@ public:
 	Node(Node&& n);
 	Node& operator=(Node&&);
 
-	auto addChild(std::shared_ptr<Node> c, std::shared_ptr<Node> p) -> void;
+	virtual auto addChild(std::shared_ptr<Node> c, std::shared_ptr<Node> p) -> void;
 
 	// Inline functions. They happen to  be getters and setters as well.
-	auto setParent(std::shared_ptr<Node> p) -> void { this->parent = p; };
-	auto setChildren(std::vector<std::shared_ptr<Node>> c) -> void { this->children = c; };
-	auto getParent()->std::shared_ptr<Node> { return this->parent; };
-	auto getChildren()->std::vector<std::shared_ptr<Node>>{ return this->children; };
+	virtual auto setParent(std::shared_ptr<Node> p) -> void { this->parent = p; };
+	virtual auto setChildren(std::vector<std::shared_ptr<Node>> c) -> void { this->children = c; };
+	virtual auto setType(std::string t)->void = 0;
+
+	virtual auto getParent()->std::shared_ptr<Node> { return this->parent; };
+	virtual auto getChildren()->std::vector<std::shared_ptr<Node>>{ return this->children; };
+	virtual auto getType()->std::string = 0;
 };

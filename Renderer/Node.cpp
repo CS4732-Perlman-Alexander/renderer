@@ -2,8 +2,6 @@
 
 Node::Node(std::shared_ptr<Node> p, std::vector<std::shared_ptr<Node>> c) : parent(p), children(c)
 {
-	//this->parent = p;
-	//this->children = c;
 };
 
 Node::Node(Node&& n)

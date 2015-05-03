@@ -9,6 +9,7 @@ nodeLight::nodeLight(lightAmbient* a, lightDiffuse* d, lightSpecular* s)
 	this->ambient = a;
 	this->diffuse = d;
 	this->specular = s;
+	this->setType("Light");
 }
 
 nodeLight::~nodeLight()

@@ -4,13 +4,12 @@ nodeMesh::nodeMesh()
 {
 }
 
-nodeMesh::nodeMesh(SimpleVertex* v, unsigned int vSize, WORD* i, unsigned int iSize, const wchar_t* fn)
+nodeMesh::nodeMesh(unsigned int sI, unsigned int nI, const wchar_t* fn)
 {
-	this->vertices = v;
-	this->indices = i;
+	this->startIndices = sI;
+	this->numIndices = nI;
 	this->fileName = fn;
-	this->numVertices = vSize;
-	this->numIndices = iSize;
+	this->setType("Mesh");
 }
 
 nodeMesh::~nodeMesh()

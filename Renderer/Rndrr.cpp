@@ -1,4 +1,6 @@
 #include "Rndrr.hpp"
+#include <stack>
+#include <vector>
 
 Rndrr::Rndrr()
 {
@@ -28,13 +30,11 @@ Rndrr::Rndrr()
 	g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 }
 
-/*
 auto Rndrr::setGraphRoot(std::shared_ptr<Node> n) -> void
 {
 	scenegraph = std::move(n);
 	prerenderSetup();
 }
-*/
 
 auto Rndrr::setMainArrays(SimpleVertex * vertices, unsigned int numVertices, WORD * indices, unsigned int numIndices, const wchar_t * texture) -> void
 {
@@ -259,7 +259,7 @@ auto Rndrr::initMatrices() -> void
 	using namespace DirectX;
 
 	// Initialize the world matrices
-	g_World = XMMatrixIdentity();
+	g_World = DirectX::XMMatrixIdentity();
 
 	// Initialize the view matrix
 	auto Eye = XMVectorSet(0.0f, 8.0f, -12.0f, 0.0f);
@@ -272,7 +272,7 @@ auto Rndrr::initMatrices() -> void
 	g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges, 0, nullptr, &cbNeverChanges, 0, 0);
 
 	// Initialize the projection matrix
-	g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, width / static_cast<FLOAT>(height), 0.01f, 100.0f);
+	g_Projection = DirectX::XMMatrixPerspectiveFovLH(XM_PIDIV4, width / static_cast<FLOAT>(height), 0.01f, 100.0f);
 
 	CBChangeOnResize cbChangesOnResize;
 	cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
@@ -673,3 +673,62 @@ auto Rndrr::updateConstantBuffers() -> void
 	cb.vMeshColor = g_vMeshColor;
 	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, nullptr, &cb, 0, 0);
 }
+
+auto Rndrr::visitTree(float timeTick)->void
+{
+	auto tStack = std::stack<DirectX::XMMATRIX>();
+	tStack.push(DirectX::XMMatrixIdentity());
+
+	auto myStack = std::stack<Node*>();
+	auto discovered = std::vector<Node*>();
+
+	myStack.push(this->scenegraph.get());
+
+	while (!myStack.empty())
+	{
+		Node* current = myStack.top();
+
+		myStack.pop();
+		//if ! the vector contains the current node
+		if (std::find(discovered.begin(), discovered.end(), current) == discovered.end())
+		{
+			discovered.emplace_back(current);
+			if (current->getType() == "Light")
+			{
+			}
+			else if (current->getType() == "Transform")
+			{
+				auto next = dynamic_cast<nodeTransform*>(current);
+
+				auto applied = next->applyTransformation(timeTick);
+
+				if (!tStack.empty())
+				{
+					tStack.push(applied);
+				}
+				
+			}
+			else if (current->getType() == "Mesh")
+			{
+				auto m = dynamic_cast<nodeMesh*>(current);
+				this->setWorld(tStack.top());
+				this->setMeshColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+				this->updateConstantBuffers();
+				this->updateShaders();
+				this->drawIndexed(m->getNumIndices(), m->getStartIndices(), 0);
+			}
+			for (auto i : current->getChildren())
+			{
+				myStack.push(i.get());
+			}
+		}
+		else
+		{
+			if (current->getType() == "Transform")
+			{
+				tStack.pop();
+			}
+		}
+	}
+
+};

@@ -9,6 +9,8 @@
 #include "RndrrStructures.hpp"
 #include "Node.hpp"
 #include "nodeMesh.hpp"
+#include "nodeTransform.hpp"
+#include "nodeLight.hpp"
 
 class Rndrr
 {
@@ -56,7 +58,7 @@ public:
 	Rndrr();
 	~Rndrr() = default;
 
-	//auto setGraphRoot(std::shared_ptr<Node> n) -> void;
+	auto setGraphRoot(std::shared_ptr<Node> n) -> void;
 	auto setMainArrays(SimpleVertex* vertices, unsigned int numVertices, WORD* indices, unsigned int numIndices, const wchar_t* texture) -> void;
 
 	auto setupViewport() -> void;
@@ -95,6 +97,8 @@ public:
 	auto getMeshColor()->DirectX::XMFLOAT4;
 	auto setMeshColor(DirectX::XMFLOAT4 meshColor)->void;
 
+	auto visitTree(float timeTick)->void;
+
 	auto drawIndexed(UINT indexCount, UINT startIndexLocation, INT baseVertexLocation) -> void 
 	{ 
 		g_pImmediateContext->DrawIndexed(indexCount, startIndexLocation, baseVertexLocation); 
@@ -102,8 +106,7 @@ public:
 	auto updateShaders() -> void;
 	auto updateConstantBuffers() -> void;
 
-	template < typename Func >
-	auto render(Func func) -> void
+	auto render(float timeTick) -> void
 	{
 		// Clear the back buffer
 		g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, DirectX::Colors::Black);
@@ -111,7 +114,8 @@ public:
 		// Clear the depth buffer to 1.0 (max depth)
 		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-		func();
+		//func();
+		this->visitTree(timeTick);
 
 		// Present our back buffer to our front buffer
 		g_pSwapChain->Present(0, 0);

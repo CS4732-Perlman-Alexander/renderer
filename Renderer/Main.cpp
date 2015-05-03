@@ -31,7 +31,6 @@ WORD indices[numIndices];
 auto CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM) -> LRESULT;
 auto renderFunction() -> void;
 auto generateCubeGeometry() -> void;
-
 //-----------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
 // loop. Idle time is used to render the scene.
@@ -61,14 +60,54 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		return hr;
 	}
 
-	generateCubeGeometry();
+	//time tick
+	static auto t = 0.0f;
 
+	generateCubeGeometry();
+	//prepare tree elements
 	renderer->setMainArrays(vertices, numVertices, indices, numIndices, L"seafloor.dds");
+	auto mNode1 = std::make_shared<nodeMesh>(0, 36, L"seafloor.dds");
+
+	auto piyo = [](float t) -> DirectX::XMMATRIX
+	{
+		return DirectX::XMMatrixRotationZ(t) * DirectX::XMMatrixTranslation(3.0f, 0.f, 0.f);
+	};
+	auto tNode1 = std::make_shared<nodeTransform>(piyo);
+
+	auto mNode2 = std::make_shared<nodeMesh>(36, 36, L"seafloor.dds");
+
+	auto hoge = [](float t) -> DirectX::XMMATRIX
+	{
+		return DirectX::XMMatrixTranslation(-3.0f, 0.f, 0.f) * DirectX::XMMatrixRotationY(t);
+	};
+	auto tNode2 = std::make_shared<nodeTransform>(hoge);
+
+	auto mNode3 = std::make_shared<nodeMesh>(72, 36, L"seafloor.dds");
+
+	//constuct tree backwards (just to be safe)
+	tNode2.get()->addChild(mNode3, tNode2);
+	mNode2.get()->addChild(tNode2, mNode2);
+	tNode1.get()->addChild(mNode2, tNode1);
+	mNode1.get()->addChild(tNode1, mNode1);
+	renderer->setGraphRoot(mNode1);
 
 	// Main message loop
 	MSG msg = {0};
 	while(WM_QUIT != msg.message)
 	{
+		if (renderer->getDriverType() == D3D_DRIVER_TYPE_REFERENCE)
+		{
+			t += static_cast<float>(DirectX::XM_PI * 0.0125f);
+		}
+		else
+		{
+			static ULONGLONG timeStart = 0;
+			auto timeCur = GetTickCount64();
+			if (timeStart == 0)
+				timeStart = timeCur;
+			t = (timeCur - timeStart) / 1000.0f;
+		}
+
 		if(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
@@ -76,7 +115,7 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		}
 		else
 		{
-			renderer->render(renderFunction);
+			renderer->render(t);
 		}
 	}
 	
@@ -186,50 +225,4 @@ auto generateCubeGeometry() -> void
 	{
 		indices[i] = tempIndexVector.at(i);
 	}
-}
-
-//-----------------------------------------------------------------------------------
-// Render a frame
-//-----------------------------------------------------------------------------------
-auto renderFunction() -> void
-{
-	// Update our time
-	static auto t = 0.0f;
-	if (renderer->getDriverType() == D3D_DRIVER_TYPE_REFERENCE)
-	{
-		t += static_cast<float>(DirectX::XM_PI * 0.0125f);
-	}
-	else
-	{
-		static ULONGLONG timeStart = 0;
-		auto timeCur = GetTickCount64();
-		if( timeStart == 0 )
-			timeStart = timeCur;
-		t = ( timeCur - timeStart ) / 1000.0f;
-	}
-
-	// Cube 1 rotates, color is green.
-	renderer->setWorld(DirectX::XMMatrixRotationZ(2*t));
-	renderer->setMeshColor(DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f));
-	// Update cube 1 stuff.
-	renderer->updateConstantBuffers();
-	renderer->updateShaders();
-	// Draw cube 1.
-	renderer->drawIndexed(numIndices/numCubes, 0, 0);
-
-	// Cube 2 rotates around cube 1, color is red.
-	renderer->setWorld(DirectX::XMMatrixTranslation(5.0f, 0.0f, 0.0f)*DirectX::XMMatrixRotationY(4 * t));
-	renderer->setMeshColor(DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
-	// Update cube 2 stuff.
-	renderer->updateConstantBuffers();
-	// Draw cube 2.
-	renderer->drawIndexed(numIndices / numCubes, numIndices / numCubes, 0);
-
-	// Cube 3 scales, color is blue.
-	renderer->setWorld(DirectX::XMMatrixScaling(2 * abs(sin(2 * t)), 2 * abs(sin(2 * t)), 2 * abs(sin(2 * t)))*DirectX::XMMatrixTranslation(5.0f, 0.0f, 5.0f));
-	renderer->setMeshColor(DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f));
-	// Update cube 3 stuff.
-	renderer->updateConstantBuffers();
-	// Draw cube 3.
-	renderer->drawIndexed(numIndices / numCubes, 2*numIndices / numCubes, 0);
-}
+};
