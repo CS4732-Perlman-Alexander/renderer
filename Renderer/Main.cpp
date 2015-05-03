@@ -63,11 +63,7 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	generateCubeGeometry();
 
-	// Initialize a unique pointer for a node mesh.
-	auto mNode0 = std::make_shared<nodeMesh>(vertices, numVertices, indices, numIndices, L"seafloor.dds");
-	
-	// Set the scenegraph and corresponding buffers.
-	renderer->setGraphRoot(std::move(mNode0));
+	renderer->setMainArrays(vertices, numVertices, indices, numIndices, L"seafloor.dds");
 
 	// Main message loop
 	MSG msg = {0};
@@ -112,6 +108,9 @@ auto CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) -> 
 	return 0;
 }
 
+//-----------------------------------------------------------------------------------
+// Generate the cube vertices/indices for n cubes.
+//-----------------------------------------------------------------------------------
 auto generateCubeGeometry() -> void
 {
 	// Generate the vertices.

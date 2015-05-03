@@ -28,11 +28,23 @@ Rndrr::Rndrr()
 	g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 }
 
+/*
 auto Rndrr::setGraphRoot(std::shared_ptr<Node> n) -> void
 {
 	scenegraph = std::move(n);
 	prerenderSetup();
-};
+}
+*/
+
+auto Rndrr::setMainArrays(SimpleVertex * vertices, unsigned int numVertices, WORD * indices, unsigned int numIndices, const wchar_t * texture) -> void
+{
+	mainVerticesArray = vertices;
+	mainNumVertices = numVertices;
+	mainIndicesArray = indices;
+	mainNumIndices = numIndices;
+	textureFileName = texture;
+	prerenderSetup();
+}
 
 auto Rndrr::setupViewport() -> void
 {
@@ -67,7 +79,7 @@ auto Rndrr::InitWindow(WNDPROC WndProc, int nCmdShow) -> HRESULT
 	}
 
 	// Create window
-	RECT rc = {0, 0, 800, 450};
+	RECT rc = {0, 0, 1280, 720};
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 	*g_hWnd = CreateWindow(L"RenderingWindowClass",
 		L"rndrr",
@@ -185,7 +197,7 @@ auto Rndrr::initTexture()->HRESULT
 {
 	auto hr = S_OK;
 	// Load the Texture
-	hr = DirectX::CreateDDSTextureFromFile(g_pd3dDevice, L"seafloor.dds", nullptr, &g_pTextureRV);
+	hr = DirectX::CreateDDSTextureFromFile(g_pd3dDevice, textureFileName, nullptr, &g_pTextureRV);
 	if (FAILED(hr))
 	{
 		return hr;
@@ -270,7 +282,7 @@ auto Rndrr::initMatrices() -> void
 auto Rndrr::initBuffers()->HRESULT
 {
 	auto hr = S_OK;
-	auto nodemesh0 = static_cast<nodeMesh*>(scenegraph.get());
+	//auto nodemesh0 = static_cast<nodeMesh*>(scenegraph.get());
 	//auto nodemesh1 = static_cast<nodeMesh*>(nodemesh0->getChildren().at(0).get());
 
 	//std::vector<nodeMesh*> nodemeshes{ nodemesh0, nodemesh1 };
@@ -279,13 +291,13 @@ auto Rndrr::initBuffers()->HRESULT
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * nodemesh0->getNumVertices();
+	bd.ByteWidth = sizeof(SimpleVertex) * mainNumVertices;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
 	//InitData.pSysMem = vertices;
-	InitData.pSysMem = nodemesh0->getVertices();
+	InitData.pSysMem = mainVerticesArray;
 	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
 	if (FAILED(hr))
 	{
@@ -298,11 +310,11 @@ auto Rndrr::initBuffers()->HRESULT
 	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * nodemesh0->getNumIndices();
+	bd.ByteWidth = sizeof(WORD) * mainNumIndices;
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	//InitData.pSysMem = indices;
-	InitData.pSysMem = nodemesh0->getIndices();
+	InitData.pSysMem = mainIndicesArray;
 	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
 	if (FAILED(hr))
 	{

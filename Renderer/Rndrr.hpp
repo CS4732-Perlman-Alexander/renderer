@@ -43,16 +43,21 @@ private:
 
 	std::shared_ptr<Node> 		scenegraph;
 
+	SimpleVertex*				mainVerticesArray;
+	unsigned int				mainNumVertices;
+	WORD*						mainIndicesArray;
+	unsigned int				mainNumIndices;
+	const wchar_t*				textureFileName;
+
 	unsigned int				width;
 	unsigned int				height;
 
 public:
-	// and a traverse/bufferstuff/render function(s) here
 	Rndrr();
 	~Rndrr() = default;
 
-	//setscenepgraph
-	auto setGraphRoot(std::shared_ptr<Node> n) -> void;
+	//auto setGraphRoot(std::shared_ptr<Node> n) -> void;
+	auto setMainArrays(SimpleVertex* vertices, unsigned int numVertices, WORD* indices, unsigned int numIndices, const wchar_t* texture) -> void;
 
 	auto setupViewport() -> void;
 	auto createInputLayout(ID3DBlob*& pVSBlob)->HRESULT;
@@ -94,7 +99,6 @@ public:
 	{ 
 		g_pImmediateContext->DrawIndexed(indexCount, startIndexLocation, baseVertexLocation); 
 	};
-
 	auto updateShaders() -> void;
 	auto updateConstantBuffers() -> void;
 
@@ -108,15 +112,6 @@ public:
 		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		func();
-
-		// Update variables that change once per frame
-		//updateConstantBuffers();
-		//updateShaders();
-
-		// First 36 vertices
-		//drawIndexed(36, 0, 0);
-		// Next 36 vertices
-		//drawIndexed(36, 36, 0);
 
 		// Present our back buffer to our front buffer
 		g_pSwapChain->Present(0, 0);
