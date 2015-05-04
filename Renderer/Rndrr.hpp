@@ -78,47 +78,26 @@ public:
 	auto initialize()->HRESULT;
 	auto prerenderSetup()->HRESULT;
 
-	//Immediate Context: Getters and Setters
-	auto getImmediateContext()->ID3D11DeviceContext*;
-	auto setImmediateContext(ID3D11DeviceContext* iContext)->void;
-	//World: Getters and Setters
-	auto getWorld()->DirectX::XMMATRIX;
-	auto setWorld(const DirectX::XMMATRIX& wMatrix)->void;
-	//View: Getters and Setters
-	auto getView()->DirectX::XMMATRIX;
-	auto setView(const DirectX::XMMATRIX& vMatrix)->void;
-	//Projection: Getters and Setters
-	auto getProjection()->DirectX::XMMATRIX;
-	auto setProjection(const DirectX::XMMATRIX& pMatrix)->void;
-	//Driver Type: Getters and Setters
-	auto getDriverType()->D3D_DRIVER_TYPE;
-	auto setDriverType(D3D_DRIVER_TYPE dType)->void;
+	auto setTransformation(const DirectX::XMMATRIX& wMatrix)->void;
+
 	//Mesh Color: Getters and Setters
 	auto getMeshColor()->DirectX::XMFLOAT4;
 	auto setMeshColor(DirectX::XMFLOAT4 meshColor)->void;
 
 	auto visitTree(float timeTick)->void;
 
-	auto drawIndexed(UINT indexCount, UINT startIndexLocation, INT baseVertexLocation) -> void 
-	{ 
-		g_pImmediateContext->DrawIndexed(indexCount, startIndexLocation, baseVertexLocation); 
-	};
 	auto updateShaders() -> void;
 	auto updateConstantBuffers() -> void;
 
-	auto render(float timeTick) -> void
+	auto render(float timeTick) -> void;
+
+	struct pointer_values_equal
 	{
-		// Clear the back buffer
-		g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, DirectX::Colors::Black);
+		Node* to_find;
 
-		// Clear the depth buffer to 1.0 (max depth)
-		g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-		//func();
-		this->visitTree(timeTick);
-
-		// Present our back buffer to our front buffer
-		g_pSwapChain->Present(0, 0);
-	}
+		bool operator()(Node* other) const
+		{
+			return to_find->getID() == other->getID();
+		}
+	};
 };
-

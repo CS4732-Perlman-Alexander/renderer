@@ -7,14 +7,16 @@ class nodeTransform : public Node
 private:
 	std::function<DirectX::XMMATRIX(float)> tForm;
 	std::string	myType;
+	std::string id;
 
 public:
 	nodeTransform() = delete;
 	~nodeTransform() = default;
 
-	nodeTransform(std::function<DirectX::XMMATRIX(float)> tf)
+	nodeTransform(std::function<DirectX::XMMATRIX(float)> tf, std::string identifier)
 	{
 		tForm = tf;
+		id = identifier;
 		setType("Transform");
 	}
 
@@ -25,4 +27,5 @@ public:
 
 	auto getType()->std::string{ return this->myType; };
 	auto setType(std::string t)->void{ this->myType = t; };
+	auto getID()->std::string { return id; };
 };

@@ -1,6 +1,7 @@
 #include "Rndrr.hpp"
 #include <stack>
 #include <vector>
+#include <algorithm>
 
 Rndrr::Rndrr()
 {
@@ -33,7 +34,6 @@ Rndrr::Rndrr()
 auto Rndrr::setGraphRoot(std::shared_ptr<Node> n) -> void
 {
 	scenegraph = std::move(n);
-	prerenderSetup();
 }
 
 auto Rndrr::setMainArrays(SimpleVertex * vertices, unsigned int numVertices, WORD * indices, unsigned int numIndices, const wchar_t * texture) -> void
@@ -593,65 +593,21 @@ auto Rndrr::prerenderSetup() -> HRESULT
 	return S_OK;
 }
 
-//Immediate Context: Getters and Setters
-auto Rndrr::getImmediateContext()->ID3D11DeviceContext*
-{
-	return this->g_pImmediateContext;
-};
-auto Rndrr::setImmediateContext(ID3D11DeviceContext* iContext)->void
-{
-	this->g_pImmediateContext = iContext;
-};
-
-//World: Getters and Setters
-auto Rndrr::getWorld()->DirectX::XMMATRIX
-{
-	return this->g_World;
-};
-auto Rndrr::setWorld(const DirectX::XMMATRIX& wMatrix)->void
+auto Rndrr::setTransformation(const DirectX::XMMATRIX& wMatrix)->void
 {
 	this->g_World = wMatrix;
-};
-
-//View: Getters and Setters
-auto Rndrr::getView()->DirectX::XMMATRIX
-{
-	return this->g_View;
-};
-auto Rndrr::setView(const DirectX::XMMATRIX& vMatrix)->void
-{
-	this->g_View = vMatrix;
-};
-
-//Projection: Getters and Setters
-auto Rndrr::getProjection()->DirectX::XMMATRIX
-{
-	return this->g_Projection;
-};
-auto Rndrr::setProjection(const DirectX::XMMATRIX& pMatrix)->void
-{
-	this->g_Projection = pMatrix;
-};
-
-//Driver Type: Getters and Setters
-auto Rndrr::getDriverType()->D3D_DRIVER_TYPE
-{
-	return this->g_driverType;
-};
-auto Rndrr::setDriverType(D3D_DRIVER_TYPE dType)->void
-{
-	this->g_driverType = dType;
-};
+}
 
 //Mesh Color: Getters and Setters
 auto Rndrr::getMeshColor()->DirectX::XMFLOAT4
 {
 	return this->g_vMeshColor;
-};
+}
+
 auto Rndrr::setMeshColor(DirectX::XMFLOAT4 meshColor)->void
 {
 	this->g_vMeshColor = meshColor;
-};
+}
 
 auto Rndrr::updateShaders() -> void
 {
@@ -674,57 +630,96 @@ auto Rndrr::updateConstantBuffers() -> void
 	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, nullptr, &cb, 0, 0);
 }
 
+auto Rndrr::render(float timeTick) -> void
+{
+	// Clear the back buffer
+	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, DirectX::Colors::Black);
+	
+	// Clear the depth buffer to 1.0 (max depth)
+	g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	this->visitTree(timeTick);
+
+	// Present our back buffer to our front buffer
+	g_pSwapChain->Present(0, 0);
+}
+
 auto Rndrr::visitTree(float timeTick)->void
 {
+	// Stack of transformation matrices.
 	auto tStack = std::stack<DirectX::XMMATRIX>();
+
+	// Initially with the identity.
 	tStack.push(DirectX::XMMatrixIdentity());
 
-	auto myStack = std::stack<Node*>();
-	auto discovered = std::vector<Node*>();
+	// Stack for the scenegraph initially contains a pointer to the top of the scenegraph.
+	auto scenegraphStack = std::stack<Node*>();
+	scenegraphStack.push(this->scenegraph.get());
 
-	myStack.push(this->scenegraph.get());
+	// Vector to keep track of visited nodes.
+	auto visited = std::vector<std::string>();
 
-	while (!myStack.empty())
+	// Using DFS, walk through the tree and do the appropriate things.
+	while (!scenegraphStack.empty())
 	{
-		Node* current = myStack.top();
+		// Pop the current node from the stack.
+		auto currentNode = scenegraphStack.top();
+		scenegraphStack.pop();
 
-		myStack.pop();
-		//if ! the vector contains the current node
-		if (std::find(discovered.begin(), discovered.end(), current) == discovered.end())
+		//pointer_values_equal equal = { currentNode };
+
+		// If we haven't visited the node yet.
+
+		bool found = false;
+		for (auto element : visited)
 		{
-			discovered.emplace_back(current);
-			if (current->getType() == "Light")
+			if (element == currentNode->getID())
 			{
-			}
-			else if (current->getType() == "Transform")
-			{
-				auto next = dynamic_cast<nodeTransform*>(current);
-
-				auto applied = next->applyTransformation(timeTick);
-
-				if (!tStack.empty())
-				{
-					tStack.push(applied);
-				}
-				
-			}
-			else if (current->getType() == "Mesh")
-			{
-				auto m = dynamic_cast<nodeMesh*>(current);
-				this->setWorld(tStack.top());
-				this->setMeshColor(DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-				this->updateConstantBuffers();
-				this->updateShaders();
-				this->drawIndexed(m->getNumIndices(), m->getStartIndices(), 0);
-			}
-			for (auto i : current->getChildren())
-			{
-				myStack.push(i.get());
+				found = true;
+				break;
 			}
 		}
+		if (!found)
+		//if (std::find(visited.begin(), visited.end(), currentNode->getID()) == visited.end())
+		//if (std::find_if(visited.begin(), visited.end(), equal) == visited.end())
+		{
+			// Add to the visited nodes vector.
+			visited.emplace_back(currentNode->getID());
+
+			// If the node type is a light.
+			if (currentNode->getType() == "Light")
+			{
+				// TODO.
+			}
+			// If the node type is a transform, retrieve the transformation with the current timeTick value, 
+			// multiply it with the previous transformation matrix, and push to the transformation matrix stack.
+			else if (currentNode->getType() == "Transform")
+			{
+				auto nextChild = dynamic_cast<nodeTransform*>(currentNode);
+				auto appliedTransformation = nextChild->applyTransformation(timeTick);
+				tStack.emplace(appliedTransformation * tStack.top());
+			}
+			// If the node type is a mesh, set the transformation matrix to the current matrix in the stack and draw the mesh.
+			else if (currentNode->getType() == "Mesh")
+			{
+				auto m = dynamic_cast<nodeMesh*>(currentNode);
+				this->setTransformation(tStack.top());
+				this->setMeshColor(m->getMeshColor());
+				this->updateConstantBuffers();
+				this->updateShaders();
+				g_pImmediateContext->DrawIndexed(m->getNumIndices(), m->getStartIndices(), 0);
+			}
+
+			// Add all the child nodes to the scenegraph stack.
+			for (auto i : currentNode->getChildren())
+			{
+				scenegraphStack.push(i.get());
+			}
+		}
+		// If we've already visited the nodes and the current node is a transform, pop the transformation matrix (since we are moving back up the tree).
 		else
 		{
-			if (current->getType() == "Transform")
+			if (currentNode->getType() == "Transform")
 			{
 				tStack.pop();
 			}
