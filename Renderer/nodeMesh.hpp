@@ -11,12 +11,11 @@ private:
 	const wchar_t*			fileName;
 	std::string				myType;
 	DirectX::XMFLOAT4		meshcolor;
-	std::string				id;
 
 public:
 	nodeMesh(){};
-	nodeMesh(unsigned int sI, unsigned int nI, const wchar_t* fn, std::string identifier);
-	nodeMesh(unsigned int sI, unsigned int nI, DirectX::XMFLOAT4 color, std::string identifier);
+	nodeMesh(unsigned int sI, unsigned int nI, const wchar_t* fn);
+	nodeMesh(unsigned int sI, unsigned int nI, DirectX::XMFLOAT4 color);
 	~nodeMesh();
 
 	nodeMesh(const nodeMesh&) = default;
@@ -29,7 +28,6 @@ public:
 	auto setType(std::string t)->void { this->myType = t; };
 
 	auto getMeshColor() -> DirectX::XMFLOAT4 { return this->meshcolor; };
-	auto getID()->std::string { return id; };
 
 };
 

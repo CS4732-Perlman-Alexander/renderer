@@ -9,7 +9,6 @@ private:
 	std::shared_ptr<Node>					parent;
 	std::vector<std::shared_ptr<Node>>		children;
 	std::string								myType;
-	std::string								id;
 
 public:
 	// Ctors, dtors.
@@ -35,5 +34,4 @@ public:
 	virtual auto getParent()->std::shared_ptr<Node> { return this->parent; };
 	virtual auto getChildren()->std::vector<std::shared_ptr<Node>>{ return this->children; };
 	virtual auto getType()->std::string = 0;
-	virtual auto getID()->std::string = 0;
 };

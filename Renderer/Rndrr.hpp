@@ -90,14 +90,4 @@ public:
 	auto updateConstantBuffers() -> void;
 
 	auto render(float timeTick) -> void;
-
-	struct pointer_values_equal
-	{
-		Node* to_find;
-
-		bool operator()(Node* other) const
-		{
-			return to_find->getID() == other->getID();
-		}
-	};
 };

@@ -1,7 +1,6 @@
 #include "Rndrr.hpp"
 #include <stack>
 #include <vector>
-#include <algorithm>
 
 Rndrr::Rndrr()
 {
@@ -657,7 +656,7 @@ auto Rndrr::visitTree(float timeTick)->void
 	scenegraphStack.push(this->scenegraph.get());
 
 	// Vector to keep track of visited nodes.
-	auto visited = std::vector<std::string>();
+	auto visited = std::vector<Node*>();
 
 	// Using DFS, walk through the tree and do the appropriate things.
 	while (!scenegraphStack.empty())
@@ -666,25 +665,11 @@ auto Rndrr::visitTree(float timeTick)->void
 		auto currentNode = scenegraphStack.top();
 		scenegraphStack.pop();
 
-		//pointer_values_equal equal = { currentNode };
-
 		// If we haven't visited the node yet.
-
-		bool found = false;
-		for (auto element : visited)
-		{
-			if (element == currentNode->getID())
-			{
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-		//if (std::find(visited.begin(), visited.end(), currentNode->getID()) == visited.end())
-		//if (std::find_if(visited.begin(), visited.end(), equal) == visited.end())
+		if (std::find(visited.begin(), visited.end(), currentNode) == visited.end())
 		{
 			// Add to the visited nodes vector.
-			visited.emplace_back(currentNode->getID());
+			visited.emplace_back(currentNode);
 
 			// If the node type is a light.
 			if (currentNode->getType() == "Light")
@@ -710,6 +695,12 @@ auto Rndrr::visitTree(float timeTick)->void
 				g_pImmediateContext->DrawIndexed(m->getNumIndices(), m->getStartIndices(), 0);
 			}
 
+			// Add parent to scenegraph stack.
+			if (currentNode->getParent().get() != nullptr)
+			{
+				scenegraphStack.push(currentNode->getParent().get());
+			}
+				
 			// Add all the child nodes to the scenegraph stack.
 			for (auto i : currentNode->getChildren())
 			{

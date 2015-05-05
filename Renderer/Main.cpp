@@ -75,24 +75,24 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		{
 			return DirectX::XMMatrixRotationY(t);
 		};
-		auto tNode1 = std::make_shared<nodeTransform>(tFunc1, "tNode1");
-		auto mNode1 = std::make_shared<nodeMesh>(0, 36, red, "mNode1");
+		auto tNode1 = std::make_shared<nodeTransform>(tFunc1);
+		auto mNode1 = std::make_shared<nodeMesh>(0, 36, red);
 
 		// Second transform and mesh.
 		auto tFunc2 = [](float t) -> DirectX::XMMATRIX
 		{
 			return DirectX::XMMatrixRotationY(t) * DirectX::XMMatrixTranslation(3.0f, 0.f, 0.f);
 		};
-		auto tNode2 = std::make_shared<nodeTransform>(tFunc2, "tNode2");
-		auto mNode2 = std::make_shared<nodeMesh>(36, 36, green, "mNode2");
+		auto tNode2 = std::make_shared<nodeTransform>(tFunc2);
+		auto mNode2 = std::make_shared<nodeMesh>(36, 36, green);
 
 		
 		auto tFunc4 = [](float t) -> DirectX::XMMATRIX
 		{
 			return DirectX::XMMatrixRotationY(t) * DirectX::XMMatrixTranslation(-3.0f, 0.f, 0.f);
 		};
-		auto tNode4 = std::make_shared<nodeTransform>(tFunc4, "tNode4");
-		auto mNode4 = std::make_shared<nodeMesh>(36, 36, purple, "mNode4");
+		auto tNode4 = std::make_shared<nodeTransform>(tFunc4);
+		auto mNode4 = std::make_shared<nodeMesh>(36, 36, purple);
 		
 
 		// Third transform and mesh.
@@ -100,8 +100,8 @@ auto WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		{
 			return DirectX::XMMatrixTranslation(0.0f, 3.f, 0.f) * DirectX::XMMatrixRotationZ(t);
 		};
-		auto tNode3 = std::make_shared<nodeTransform>(tFunc3, "tNode3");
-		auto mNode3 = std::make_shared<nodeMesh>(72, 36, blue, "mNode3");
+		auto tNode3 = std::make_shared<nodeTransform>(tFunc3);
+		auto mNode3 = std::make_shared<nodeMesh>(72, 36, blue);
 
 		// Construct the tree.
 		renderer->setGraphRoot(tNode1);
